@@ -1,0 +1,18 @@
+---
+title: Agents
+---
+
+An **agent** is an identity with:
+
+- an `agent_id`
+- one or more public keys
+- status (pending/active/revoked)
+- optional telemetry
+
+Agents sign requests using their private key. Your relying service verifies the signature and then asks Clawb for the policy decision.
+
+## Create an agent
+
+1. Create agent (register)
+2. Attest (prove key ownership)
+3. (Optional) Claim the agent into a workspace

@@ -1,0 +1,12 @@
+---
+title: Attestation
+---
+
+Attestation proves the caller controls the private key that corresponds to the registered public key.
+
+High-level flow:
+
+1. Register the agent with a public key
+2. Clawb returns a **challenge**
+3. The agent signs the challenge
+4. The agent submits the signature to attest and become active

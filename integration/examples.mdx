@@ -1,0 +1,33 @@
+---
+title: Examples
+---
+
+## Customer-support agent issuing refunds
+
+Actors:
+
+- Human: support manager
+- Agent: AI support bot
+- Relying service: your backend refund API
+
+Every refund request calls `/v1/check` with context like:
+
+```json
+{ "action": "refund", "amount": 49.00, "customer_id": "...", "reason": "late delivery" }
+```
+
+## DevOps agent deploying to production
+
+Context example:
+
+```json
+{ "action": "deploy", "env": "prod", "repo": "api", "commit": "...", "change_risk": "high" }
+```
+
+## Research agent using paid APIs
+
+Context example:
+
+```json
+{ "action": "search", "provider": "serp", "estimated_cost": 0.10 }
+```
