@@ -1,0 +1,15 @@
+---
+title: Policies
+---
+
+Policies decide whether an action should be **allowed**, **challenged**, or **denied**.
+
+A policy typically evaluates a **context** object you send with each check.
+
+Examples of context keys:
+
+- `action`: "refund" | "deploy" | "search" | ...
+- `amount`: number
+- `env`: "staging" | "prod"
+- `estimated_cost`: number
+- `change_risk`: "low" | "high"

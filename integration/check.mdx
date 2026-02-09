@@ -1,0 +1,29 @@
+---
+title: Integrating /v1/check
+---
+
+Your relying service calls Clawb **right before** executing a sensitive action.
+
+## Request
+
+```http
+POST /v1/check
+Content-Type: application/json
+
+{
+  "agent_id": "agt_...",
+  "policy_id": "pol_default",
+  "context": {
+    "action": "refund",
+    "amount": 49.00,
+    "customer_id": "cus_123",
+    "reason": "late delivery"
+  }
+}
+```
+
+## Response
+
+```json
+{ "decision": "allow" | "challenge" | "deny", "reasons": ["..."] }
+```
