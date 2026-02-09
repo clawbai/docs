@@ -1,12 +1,308 @@
 ---
-title: Attestation
+title: Attestation (prove key ownership)
 ---
 
-Attestation proves the caller controls the private key that corresponds to the registered public key.
+Attestation is how an **agent proves it controls its private key**.
 
-High-level flow:
+If you’re not security-focused, here’s the mental model:
+- You register a **public key** (safe to share).
+- Clawb gives you a one-time **challenge** (random bytes).
+- Your agent signs that challenge with its **private key** (secret).
+- Clawb verifies the signature using the stored public key.
 
-1. Register the agent with a public key
-2. Clawb returns a **challenge**
-3. The agent signs the challenge
-4. The agent submits the signature to attest and become active
+Once attested, the agent can be marked **active**.
+
+---
+
+## What you need (inputs)
+From the register step you will have:
+- `agent_id`
+- `challenge_id`
+- `challenge` (a **base64** string)
+
+And you also have:
+- the agent’s **private key** (keep it secret)
+
+---
+
+## Step-by-step: how to attest
+
+### 1) Register the agent (get a challenge)
+Call `POST /v1/agents/register` with your agent’s public key.
+
+Clawb returns:
+```json
+{
+  "agent_id": "agt_...",
+  "challenge_id": "ch_...",
+  "challenge": "<base64>"
+}
+```
+
+### 2) Decode the challenge (base64 → bytes)
+The challenge is shown as **base64** because JSON can’t safely carry raw bytes.
+
+**Important:** you must sign the **decoded bytes**, not the base64 text.
+
+Conceptually:
+```text
+challenge_bytes = base64_decode(challenge)
+```
+
+### 3) Sign the decoded bytes with Ed25519
+```text
+signature_bytes = ed25519_sign(private_key, challenge_bytes)
+signature = base64_encode(signature_bytes)
+```
+
+Ed25519 signatures are always **64 bytes**.
+
+### 4) Submit the signature
+Call `POST /v1/agents/attest`:
+```json
+{
+  "agent_id": "agt_...",
+  "challenge_id": "ch_...",
+  "signature": "<base64-signature>"
+}
+```
+
+If everything is correct, Clawb responds with:
+```json
+{ "agent_id": "agt_...", "status": "active" }
+```
+
+---
+
+## What does “sign the decoded challenge bytes” mean?
+
+You will see something like:
+- `challenge = "MjAy..."` (base64 text)
+
+Clawb will verify a signature over:
+- `base64_decode(challenge)` (the underlying bytes)
+
+So:
+- ✅ correct: `sign(base64_decode(challenge))`
+- ❌ wrong: `sign("MjAy..." as text)`
+
+---
+
+## Common errors (and what they usually mean)
+
+- **`410 challenge expired`**: you waited too long (challenge has a short lifetime). Re-register to get a new challenge.
+- **`409 challenge already used`**: a challenge is one-time use. Re-register.
+- **`401 invalid signature`**: usually one of:
+  - you signed the base64 *string* instead of decoded bytes
+  - you used the wrong private key
+  - you accidentally encoded/decoded with the wrong base64 variant
+
+---
+
+## Attestation examples (Node, Python, Go, Rust)
+
+### Key format note
+If you copied the private key from the dashboard and it says something like **“PKCS8 base64”**, that usually means:
+- your private key is **PKCS#8 DER**, represented as a base64 string
+
+Each example below assumes:
+- `challenge_b64` = the `challenge` you got from register
+- `priv_pkcs8_b64` = your base64 PKCS#8 private key
+
+
+### Node.js (built-in `crypto`)
+```js
+import crypto from "crypto";
+
+const agent_id = "agt_...";
+const challenge_id = "ch_...";
+
+const challenge_b64 = "<challenge_base64>";
+const priv_pkcs8_b64 = "<private_key_pkcs8_base64>";
+
+// 1) Decode challenge bytes
+const challengeBytes = Buffer.from(challenge_b64, "base64");
+
+// 2) Load PKCS8 DER private key
+const privateKeyDer = Buffer.from(priv_pkcs8_b64, "base64");
+const privateKey = crypto.createPrivateKey({
+  key: privateKeyDer,
+  format: "der",
+  type: "pkcs8",
+});
+
+// 3) Sign (Ed25519: pass null digest)
+const sig = crypto.sign(null, challengeBytes, privateKey);
+
+// 4) Signature base64
+const signature_b64 = sig.toString("base64");
+
+console.log({ agent_id, challenge_id, signature: signature_b64 });
+
+// 5) POST signature_b64 to /v1/agents/attest
+```
+
+### Python (`cryptography`)
+Install:
+```bash
+pip install cryptography
+```
+
+```py
+import base64
+from cryptography.hazmat.primitives import serialization
+
+agent_id = "agt_..."
+challenge_id = "ch_..."
+
+challenge_b64 = "<challenge_base64>"
+priv_pkcs8_b64 = "<private_key_pkcs8_base64>"
+
+# 1) Decode challenge bytes
+challenge_bytes = base64.b64decode(challenge_b64)
+
+# 2) Load PKCS8 DER private key
+priv_der = base64.b64decode(priv_pkcs8_b64)
+private_key = serialization.load_der_private_key(priv_der, password=None)
+
+# 3) Sign
+signature_bytes = private_key.sign(challenge_bytes)
+
+# 4) Signature base64
+signature_b64 = base64.b64encode(signature_bytes).decode("utf-8")
+
+print({
+    "agent_id": agent_id,
+    "challenge_id": challenge_id,
+    "signature": signature_b64,
+})
+
+# 5) POST signature_b64 to /v1/agents/attest
+```
+
+### Go (standard library)
+```go
+package main
+
+import (
+	"crypto/ed25519"
+	"crypto/x509"
+	"encoding/base64"
+	"fmt"
+	"log"
+)
+
+func main() {
+	agentID := "agt_..."
+	challengeID := "ch_..."
+
+	challengeB64 := "<challenge_base64>"
+	privPKCS8B64 := "<private_key_pkcs8_base64>"
+
+	challengeBytes, err := base64.StdEncoding.DecodeString(challengeB64)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	privDer, err := base64.StdEncoding.DecodeString(privPKCS8B64)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	keyAny, err := x509.ParsePKCS8PrivateKey(privDer)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	priv, ok := keyAny.(ed25519.PrivateKey)
+	if !ok {
+		log.Fatal("not an ed25519 private key")
+	}
+
+	sig := ed25519.Sign(priv, challengeBytes)
+	signatureB64 := base64.StdEncoding.EncodeToString(sig)
+
+	fmt.Printf("agent_id=%s\nchallenge_id=%s\nsignature=%s\n", agentID, challengeID, signatureB64)
+}
+```
+
+### Rust (`ed25519-dalek` + `pkcs8`)
+`Cargo.toml`:
+```toml
+[dependencies]
+base64 = "0.22"
+ed25519-dalek = { version = "2", features = ["pkcs8"] }
+pkcs8 = "0.10"
+```
+
+```rust
+use base64::{engine::general_purpose, Engine as _};
+use ed25519_dalek::{Signer, SigningKey};
+use pkcs8::DecodePrivateKey;
+
+fn main() {
+    let agent_id = "agt_...";
+    let challenge_id = "ch_...";
+
+    let challenge_b64 = "<challenge_base64>";
+    let priv_pkcs8_b64 = "<private_key_pkcs8_base64>";
+
+    let challenge_bytes = general_purpose::STANDARD
+        .decode(challenge_b64)
+        .expect("bad base64 challenge");
+
+    let priv_der = general_purpose::STANDARD
+        .decode(priv_pkcs8_b64)
+        .expect("bad base64 private key");
+
+    let signing_key = SigningKey::from_pkcs8_der(&priv_der)
+        .expect("failed to parse PKCS8 ed25519 private key");
+
+    let signature = signing_key.sign(&challenge_bytes);
+    let signature_b64 = general_purpose::STANDARD.encode(signature.to_bytes());
+
+    println!("agent_id={}", agent_id);
+    println!("challenge_id={}", challenge_id);
+    println!("signature={}", signature_b64);
+}
+```
+
+---
+
+## After attestation: signing requests (step-by-step)
+
+Once your agent is active, you’ll typically sign requests that matter (for example when calling your service, or when calling Clawb signed endpoints).
+
+### Required headers
+- `X-Clawb-Agent-Id`: your `agent_id`
+- `X-Clawb-Timestamp`: unix epoch seconds (example: `1739140000`)
+- `X-Clawb-Nonce`: random string (UUID is fine)
+- `X-Clawb-Signature`: base64 Ed25519 signature
+
+### Canonical string (exact format)
+Build this string (newlines matter):
+
+```text
+METHOD\nPATH\nTIMESTAMP\nNONCE\nSHA256(body)
+```
+
+Where:
+- `METHOD` is uppercase (`POST`, `GET`, …)
+- `PATH` is only the path (example: `/v1/check`) — not the full URL
+- `SHA256(body)` is lowercase hex of the SHA-256 of the raw request body bytes
+
+Then sign the **UTF-8 bytes** of that canonical string with Ed25519, and base64-encode the signature bytes into `X-Clawb-Signature`.
+
+### Why timestamp + nonce?
+They help prevent replay attacks (someone capturing a request and re-sending it later).
+
+---
+
+## UI note: “Attest now”
+The dashboard may offer an **“Attest now”** button.
+
+That button is a convenience for development:
+- if the browser generated the keypair, the browser already has the private key
+- so it can sign locally and call `/v1/agents/attest`
+
+In production, the **agent runtime** should do the signing.

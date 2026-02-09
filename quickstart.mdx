@@ -4,13 +4,34 @@ title: Quickstart
 
 ## What you’re building
 
-You’ll put Clawb in front of sensitive actions by calling **`POST /v1/check`** with context about the action.
+You’re putting Clawb in front of sensitive actions by calling **`POST /v1/check`** with context about the action.
 
-## Minimal flow
+Clawb returns a decision:
+- `allow` → proceed
+- `challenge` → require extra proof
+- `deny` → block
 
-1) Your agent makes a request to your service (signed).
-2) Your service verifies the agent signature.
-3) Your service calls Clawb:
+---
+
+## Minimal flow (step-by-step)
+
+### 1) Create an agent identity
+An **agent** is an identity with an `agent_id` and one or more keys.
+
+You will:
+1) generate a keypair (public + private)
+2) register the public key with Clawb
+3) attest (prove you control the private key)
+
+See [Attestation](/agents/attestation).
+
+### 2) Your agent calls your service (signed)
+When an agent requests something sensitive, it should sign the request.
+
+Your service verifies the signature before doing anything.
+
+### 3) Your service asks Clawb for a decision
+Example request to Clawb:
 
 ```http
 POST /v1/check
@@ -23,8 +44,23 @@ Content-Type: application/json
 }
 ```
 
-4) Enforce the decision:
-
+### 4) Enforce the decision
 - allow → proceed
-- challenge → require extra proof
+- challenge → require extra proof (MFA, deposit, manual approval, etc.)
 - deny → block
+
+---
+
+## Quick mental model (non-technical)
+
+- **Agent** = “who is asking?”
+- **Signature** = “proof it’s really them”
+- **Policy** = “the rules for what they’re allowed to do”
+- **/v1/check** = “ask the bouncer what to do right now”
+
+---
+
+## Common pitfalls
+
+- If you never attest, the agent may remain **pending** and policies may return `challenge`.
+- If your service doesn’t verify signatures, any caller can pretend to be an agent by guessing an `agent_id`.

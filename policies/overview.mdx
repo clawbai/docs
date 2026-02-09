@@ -2,14 +2,76 @@
 title: Policies
 ---
 
-Policies decide whether an action should be **allowed**, **challenged**, or **denied**.
+Policies decide whether an action should be:
+- **allowed**
+- **challenged** (needs extra proof)
+- **denied**
 
-A policy typically evaluates a **context** object you send with each check.
+A policy evaluates a **context** object you send with each `/v1/check`.
 
-Examples of context keys:
+---
 
-- `action`: "refund" | "deploy" | "search" | ...
-- `amount`: number
-- `env`: "staging" | "prod"
-- `estimated_cost`: number
-- `change_risk`: "low" | "high"
+## A simple way to think about policies
+
+A policy is a “bouncer rule set”.
+
+When your service asks Clawb:
+> should agent X be allowed to do action Y right now?
+
+Clawb returns:
+- `allow` → let it through
+- `challenge` → ask for more proof first
+- `deny` → block
+
+---
+
+## What goes into `context`
+
+The context object is where you describe what is happening.
+
+Examples of helpful context keys:
+- `action`: e.g. `"refund"`, `"deploy"`, `"transfer"`
+- `amount`: number (money amount)
+- `env`: `"staging"` or `"prod"`
+- `estimated_cost`: number (LLM/tool spend)
+- `change_risk`: `"low" | "medium" | "high"`
+- `resource`: what is being accessed (repo name, customer id, etc.)
+
+Example:
+```json
+{
+  "agent_id": "agt_...",
+  "policy_id": "pol_default",
+  "context": {
+    "action": "deploy",
+    "env": "prod",
+    "change_risk": "high",
+    "resource": "api-backend"
+  }
+}
+```
+
+---
+
+## Common policy patterns (beginner-friendly)
+
+- **Small actions are allowed**
+  - low amounts, staging deployments, low-risk changes
+
+- **Medium-risk actions are challenged**
+  - require a human approval step, a second factor, or a delay
+
+- **High-risk actions are denied by default**
+  - prod database deletes, big money transfers, unknown agents
+
+---
+
+## How you should use `challenge`
+
+Clawb doesn’t decide *how* you challenge—your app does.
+
+Common challenge implementations:
+- require a human approval
+- require a 2nd signature (different key)
+- require an allowlist match (domain / repo / customer)
+- require a deposit / rate limit / cooldown

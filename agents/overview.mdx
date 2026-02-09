@@ -2,17 +2,52 @@
 title: Agents
 ---
 
-An **agent** is an identity with:
+An **agent** is an identity in Clawb.
 
-- an `agent_id`
-- one or more public keys
-- status (pending/active/revoked)
-- optional telemetry
+Think of it like a “passport” for an automated system:
+- it has an `agent_id`
+- it has one or more **public keys**
+- it has a **status** (`pending`, `active`, `revoked`)
+- it can optionally send telemetry
 
-Agents sign requests using their private key. Your relying service verifies the signature and then asks Clawb for the policy decision.
+Your agent uses its **private key** to sign messages.
+Other systems use the **public key** to verify those signatures.
 
-## Create an agent
+---
 
-1. Create agent (register)
-2. Attest (prove key ownership)
-3. (Optional) Claim the agent into a workspace
+## Why agents exist
+
+If you only rely on API keys, any leaked key can be reused forever.
+
+With agent identity + signatures:
+- you can prove “this request came from *that* agent”
+- you can rotate keys over time
+- you can apply policies (allow/challenge/deny) to sensitive actions
+
+---
+
+## Agent lifecycle
+
+### 1) Register (create the agent)
+You register an agent’s **public key** to get an `agent_id`.
+
+### 2) Attest (prove key ownership)
+Clawb gives you a one-time **challenge**.
+The agent signs it with its private key and sends the signature back.
+
+This step proves: “the entity registering the agent actually has the private key.”
+
+See [Attestation](/agents/attestation).
+
+### 3) Active vs pending vs revoked
+- **pending**: not yet attested (or needs additional steps)
+- **active**: attested and allowed to participate normally
+- **revoked**: blocked
+
+---
+
+## Key safety (practical)
+
+- Public key: safe to store and share.
+- Private key: **do not paste into Slack/Discord, do not send to servers you don’t control.**
+- Treat any leaked private key as compromised; generate a new keypair.
