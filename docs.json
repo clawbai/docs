@@ -7,7 +7,7 @@
     "light": "#fb7185",
     "dark": "#be123c"
   },
-  "favicon": "/favicon.svg",
+  "favicon": "/favicon.png",
   "navigation": {
     "tabs": [
       {
@@ -86,8 +86,10 @@
       "href": "https://app.clawb.ai/login"
     },
     "logo": {
-      "type": "text",
-      "text": "Clawb AI"
+      "type": "image",
+      "image": "/images/logo.png",
+      "alt": "Clawb",
+      "height": 24
     }
   },
   "contextual": {
