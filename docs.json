@@ -41,6 +41,26 @@
             ]
           },
           {
+            "group": "Vault",
+            "pages": [
+              "vault/overview",
+              "vault/api"
+            ]
+          },
+          {
+            "group": "Reputation",
+            "pages": [
+              "reputation/overview"
+            ]
+          },
+          {
+            "group": "Verification service",
+            "pages": [
+              "verification/overview",
+              "verification/verify-api"
+            ]
+          },
+          {
             "group": "SDK",
             "pages": [
               "sdk/python"

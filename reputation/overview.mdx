@@ -1,0 +1,102 @@
+---
+title: Reputation
+---
+
+Reputation is Clawb’s way to summarize **how risky an agent is** and how much trust it has earned over time.
+
+It is designed to be:
+- **provider-friendly** (API providers can make fast decisions)
+- **explainable** (facets + signals, not a single opaque score)
+- **hard to game** (signed feedback, time decay, anomaly detection)
+
+---
+
+## Why reputation exists
+Agent identity + signatures answer: “who is calling?”
+
+Reputation adds:
+- “how has this agent behaved historically?”
+- “should I rate-limit, require extra verification, or block?”
+
+This is especially useful for:
+- paid APIs
+- financial actions
+- high-impact automation (deploys, deletes, transfers)
+
+---
+
+## Facets (v1)
+Rather than a single global score, Clawb returns a small set of facets.
+
+### verification_tier
+How strongly the agent’s identity is established.
+
+Example tiers:
+- `unverified` (new, not attested)
+- `verified` (attested key ownership)
+- `partner_verified` (additional checks / enterprise attestation)
+
+### risk_tier
+A coarse risk bucket for decisioning.
+
+Example:
+- `low`, `medium`, `high`
+
+### reputation_band
+A maturity signal.
+
+Example:
+- `new`, `established`, `high`
+
+### signals_summary
+A compact summary of the inputs (counts, recent windows), suitable for dashboards and provider decisioning.
+
+---
+
+## Signals (inputs)
+
+### System signals
+- successful vs failed requests
+- policy violations
+- auth failures
+- rate-limit hits
+- anomaly flags
+
+### Provider feedback (signed)
+Providers using the Verification Service can submit signed feedback signals, e.g.:
+- suspected abuse
+- spam / scraping
+- high error rate
+
+These signals are rate-limited and attributed to the provider.
+
+### Human/org attestations
+Organizations can attach endorsements / attestations for internal agents.
+
+---
+
+## Cold start behavior
+New agents are treated explicitly as **new**.
+
+Recommended behavior for providers:
+- allow low-risk calls but apply stricter rate limits
+- require higher thresholds for expensive actions
+- step up verification (challenge flows) for sensitive operations
+
+---
+
+## Anti-gaming design
+- Provider feedback is weighted higher than self-reported metrics.
+- Signals decay over time.
+- Anomaly detection flags suspicious bursts.
+- Reputation computations retain provenance (who said what, when).
+
+---
+
+## Where you see reputation
+- In the dashboard (agent profile)
+- In verification responses (provider-facing)
+- In policy evaluation (internal bouncer decisions)
+
+Related:
+- [Agent Verification Service](/verification/overview)

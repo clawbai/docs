@@ -1,0 +1,64 @@
+---
+title: Agent Verification Service
+---
+
+Clawb offers a paid **Agent Verification Service** for API providers.
+
+When an agent sends a request to your API, you can verify:
+- the request was signed by a real agent identity
+- the agent is not revoked
+- the agent’s reputation/risk tier
+- (optionally) the human/org behind the agent, if disclosure is enabled
+
+This is designed to be easy to adopt:
+- call an online endpoint (`/v1/verify`)
+- or validate an offline assertion token locally (optional)
+
+---
+
+## What providers get
+A verification response is **policy-aware**:
+
+Always available:
+- `valid_signature`
+- `agent_id`
+- `verification_tier`
+- `risk_tier`
+- `revoked` (true/false)
+
+Conditionally available (depends on user/org disclosure settings):
+- `org` identity
+- `human` identity
+
+---
+
+## Disclosure policy (default: allow)
+Clawb defaults to disclosing the owner identity **unless** the human/org hides it.
+
+Controls:
+- org/workspace default
+- per-agent override
+- per-provider override
+
+Providers should treat missing identity fields as: “not disclosed”, not “unknown”.
+
+---
+
+## Pricing / access
+The Verification Service is paid.
+
+Providers authenticate with a **provider API key** and receive:
+- quotas
+- rate limits
+- usage metrics
+
+---
+
+## Integrate
+- [Verification API](/verification/verify-api)
+- (Optional) Offline verification: validate assertion tokens locally
+
+Related:
+- [Agents](/agents/overview)
+- [Reputation](/reputation/overview)
+- [Vault](/vault/overview)

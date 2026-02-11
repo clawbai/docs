@@ -1,0 +1,128 @@
+---
+title: Verification API (v1)
+---
+
+This page describes the provider-facing Verification API.
+
+Goal: help API providers answer “should I trust this agent request?”
+
+---
+
+## Auth
+Providers use a paid **provider API key**.
+
+```http
+Authorization: Bearer prv_...
+```
+
+---
+
+## Verify an agent request (online)
+
+```http
+POST /v1/verify
+Content-Type: application/json
+Authorization: Bearer prv_...
+
+{
+  "signed_request": {
+    "method": "POST",
+    "path": "/v1/refunds",
+    "timestamp": "2026-02-11T20:11:12Z",
+    "nonce": "n_123",
+    "body_hash": "sha256:...",
+    "agent_id": "agt_...",
+    "signature": "base64:...",
+    "key_id": "key_..."
+  }
+}
+```
+
+### Response
+
+```json
+{
+  "valid_signature": true,
+  "agent": {
+    "agent_id": "agt_...",
+    "revoked": false,
+    "verification_tier": "verified"
+  },
+  "reputation": {
+    "risk_tier": "low",
+    "reputation_band": "established",
+    "signals_summary": {
+      "window_days": 30,
+      "success_rate": 0.992,
+      "policy_violations": 0
+    }
+  },
+  "owner": {
+    "org": {
+      "id": "org_...",
+      "name": "Acme Inc"
+    },
+    "human": {
+      "id": "hum_...",
+      "display_name": "Jane Doe"
+    }
+  },
+  "disclosure": {
+    "org_disclosed": true,
+    "human_disclosed": true
+  },
+  "response_signature": {
+    "key_id": "clawb_key_...",
+    "signature": "base64:..."
+  }
+}
+```
+
+Notes:
+- `owner` fields may be omitted when disclosure is disabled.
+- Providers should not treat omitted identity as a failure.
+- `response_signature` lets you verify the response is authentic.
+
+---
+
+## Offline verification (optional)
+For low-latency or high-volume integrations, agents can include an **assertion token** (JWT-like) that providers can validate locally.
+
+Recommended approach:
+- validate the token signature using Clawb’s public keys
+- enforce short expirations
+- optionally call `/v1/verify` for revocation checks or higher-risk operations
+
+---
+
+## Error modes
+Expected errors:
+- `401` invalid provider API key
+- `429` rate limited
+- `400` malformed signed request
+- `200` with `valid_signature=false` for signature failures (recommended to avoid info leaks)
+
+---
+
+## Provider feedback (reputation signals)
+Providers can submit feedback to improve ecosystem safety.
+
+```http
+POST /v1/reputation/feedback
+Authorization: Bearer prv_...
+Content-Type: application/json
+
+{
+  "agent_id": "agt_...",
+  "signal": "abuse_suspected",
+  "severity": "high",
+  "evidence": {
+    "request_ids": ["..."],
+    "notes": "credential stuffing pattern"
+  },
+  "timestamp": "2026-02-11T20:11:12Z",
+  "signature": "base64:..."
+}
+```
+
+Clawb rate-limits and attributes feedback, and uses it as an input signal for reputation.
