@@ -1,0 +1,179 @@
+---
+title: Vault API (v1)
+---
+
+This page describes the intended Vault API shape for storing and using generic secrets (API keys, tokens, arbitrary env vars) in Clawb.
+
+> Note: endpoint names may evolve. The **core contract** is stable: store secret sets, grant access, mint leases, and use secrets via proxy/injection.
+
+---
+
+## Objects
+
+### Secret set
+A named collection of key/value entries.
+
+Fields (conceptual):
+- `id`
+- `workspace_id` / `org_id`
+- `human_owner_id` (optional)
+- `provider` (string)
+- `environment` (string)
+- `name` (string)
+- `created_at`, `updated_at`
+- `version`
+
+### Grant
+Permission for an agent to use a secret set.
+
+Fields (conceptual):
+- `id`
+- `secret_set_id`
+- `agent_id`
+- `allowed_keys`: `"*"` or an array allowlist
+- `allowed_actions`: e.g. `proxy_use`, `mint_workflow_lease`, `export_plaintext` (disabled by default)
+- `expires_at` (optional)
+
+### Lease
+Short-lived capability token.
+
+Fields (conceptual):
+- `lease_id`
+- `kind`: `request` | `workflow`
+- `expires_at`
+- `constraints` (bound secret set, actions, optional key allowlist)
+
+---
+
+## Create a secret set (KV)
+
+```http
+POST /v1/vault/secret-sets
+Content-Type: application/json
+
+{
+  "provider": "stripe",
+  "environment": "prod",
+  "name": "billing-bot",
+  "entries": {
+    "STRIPE_SECRET_KEY": "sk_live_...",
+    "STRIPE_WEBHOOK_SECRET": "whsec_..."
+  }
+}
+```
+
+Notes:
+- The server encrypts entries at rest.
+- By default, responses do not include plaintext values.
+
+---
+
+## Import a .env-style secret set
+
+```http
+POST /v1/vault/secret-sets/import
+Content-Type: application/json
+
+{
+  "provider": "custom",
+  "environment": "staging",
+  "name": "data-pipeline",
+  "dotenv": "FOO=bar\nBAZ=qux\n"
+}
+```
+
+---
+
+## Grant an agent access
+
+```http
+POST /v1/vault/grants
+Content-Type: application/json
+
+{
+  "agent_id": "agt_123",
+  "secret_set_id": "ss_456",
+  "allowed_actions": ["proxy_use"],
+  "allowed_keys": ["STRIPE_SECRET_KEY"],
+  "expires_at": "2026-03-01T00:00:00Z"
+}
+```
+
+Recommended default:
+- `allowed_actions=["proxy_use"]`
+- `allowed_keys="*"` only when you trust the agent with the full set
+
+---
+
+## Mint a request-scoped lease
+
+```http
+POST /v1/vault/leases
+Content-Type: application/json
+
+{
+  "agent_id": "agt_123",
+  "secret_set_id": "ss_456",
+  "kind": "request",
+  "action": "proxy_use",
+  "ttl_seconds": 60
+}
+```
+
+---
+
+## Use a lease via proxy/injection
+
+A generic proxy endpoint can forward requests while injecting secrets.
+
+```http
+POST /v1/vault/proxy
+Content-Type: application/json
+
+{
+  "lease_id": "ls_789",
+  "target": {
+    "method": "POST",
+    "url": "https://api.stripe.com/v1/refunds",
+    "headers": {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    "body": "payment_intent=pi_...&amount=100"
+  },
+  "injection": {
+    "type": "header",
+    "header": "Authorization",
+    "format": "Bearer ${STRIPE_SECRET_KEY}"
+  }
+}
+```
+
+Notes:
+- Injection configuration can be explicit per request (advanced) or derived from a server-side mapping (recommended).
+- The agent should not receive the raw key.
+
+---
+
+## Auditing
+Vault should expose audit logs (admin-only):
+
+```http
+GET /v1/vault/audit?secret_set_id=ss_456&limit=50
+```
+
+Audit entries should include:
+- `timestamp`
+- `actor` (human or agent)
+- `action` (grant_created, lease_minted, lease_used, secret_set_updated)
+- `metadata` (which keys were referenced, request id, provider)
+
+---
+
+## Hard boundaries
+If you are building an agent:
+- Never print secret values.
+- Never store secrets in logs.
+- Prefer leases + proxy use.
+
+If you are building a relying service:
+- Treat Vault proxy calls as sensitive operations; apply policies and rate limits.

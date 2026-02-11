@@ -1,0 +1,108 @@
+---
+title: Vault
+---
+
+Clawb Vault is a secure place for humans and organizations to store **secrets** (API keys, tokens, passwords, certificates, and arbitrary environment variables) and let approved agents use them **without leaking the raw value**.
+
+Think of it as:
+- a **key/value store** for secrets (like a hosted `.env`)
+- with **access grants** for agents
+- with **auditing** for every access
+- with optional **proxy/injection** so agents can call external APIs without ever seeing plaintext credentials
+
+---
+
+## What you can store
+Vault is provider-agnostic. A secret is just a key/value pair.
+
+Common patterns:
+- **Single API key**
+  - `OPENAI_API_KEY=...`
+- **A “secret set” (remote env file)**
+  - `STRIPE_SECRET_KEY=...`
+  - `STRIPE_WEBHOOK_SECRET=...`
+  - `STRIPE_ACCOUNT_ID=...`
+- **Service-specific bundles**
+  - AWS: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`
+  - GitHub: `GITHUB_TOKEN`
+
+---
+
+## Core concepts
+
+### Secret set
+A **secret set** is a named collection of key/value entries.
+
+Recommended naming:
+- `provider`: `openai`, `stripe`, `github`, `custom`
+- `environment`: `dev`, `staging`, `prod`
+- `name`: `default`, `billing-bot`, `data-pipeline`
+
+Example:
+- `provider=stripe`, `environment=prod`, `name=billing-bot`
+
+### Grants (who can use it)
+A **grant** defines which agent(s) can use a secret set and under what constraints.
+
+Typical grant constraints:
+- allow specific **agents** only
+- optional **allowlist** of keys inside the secret set
+- allowed **actions** (recommended default: *proxy use*, not export)
+- TTL (time bound permissions)
+- optional rate/spend constraints (enforced when possible)
+
+### Leases (capability tokens)
+When an agent needs to use a secret set, Clawb issues a short-lived **lease**:
+- **request-scoped** (single-use) — recommended default
+- **workflow-scoped** (multi-use within constraints) — for long-running workflows
+
+Leases are bound to:
+- agent identity
+- secret set
+- permitted action(s)
+- expiry (short TTL)
+
+---
+
+## Security model (high level)
+
+### Encryption
+- Secrets are encrypted **at rest**.
+- Keys are rotated over time.
+- Secrets are versioned (you can roll back safely).
+
+### No-plaintext by default
+By default:
+- Vault APIs do **not** return plaintext secret values.
+- Approved agent usage happens via **proxy/injection**.
+
+### Auditing
+Every relevant event is audited:
+- secret set create/update/delete (soft delete)
+- grant changes
+- lease minting
+- lease usage (secret accessed)
+
+Audit logs are designed to be privacy-preserving:
+- log *which keys were used* and *when*, not the secret values.
+
+---
+
+## Recommended default: proxy/injection (agents never see keys)
+Instead of giving an agent a secret, Clawb can act as a **credential injection proxy**:
+
+1) agent requests a lease to perform an action
+2) agent sends the outbound request to Clawb (with the lease)
+3) Clawb injects the secret server-side and forwards to the external provider
+
+Benefits:
+- agents can’t exfiltrate raw keys
+- revocation is immediate
+- auditing is straightforward
+
+---
+
+## Related docs
+- [Agents](/agents/overview)
+- [Agent Verification Service](/verification/overview)
+- [Reputation](/reputation/overview)
