@@ -7,7 +7,9 @@ Policies decide whether an action should be:
 - **challenged** (needs extra proof)
 - **denied**
 
-A policy evaluates a **context** object you send with each `/v1/check`.
+Policies are the decision layer between **agent identity** and **an action request**.
+
+At runtime, your service calls **`/v1/check`** with an identity + action + context. Clawb evaluates the policy and returns a decision.
 
 ---
 
@@ -18,26 +20,67 @@ A policy is a “bouncer rule set”.
 When your service asks Clawb:
 > should agent X be allowed to do action Y right now?
 
-Clawb returns:
+Clawb returns one of:
 - `allow` → let it through
-- `challenge` → ask for more proof first
+- `challenge` → ask for more proof first (then re-check)
 - `deny` → block
+
+---
+
+## Who defines policies?
+
+Typically there are three layers:
+
+- **Org/workspace admins (customers)** define the real rules:
+  - “this agent can send email to internal domains only”
+  - “refunds up to $50 are allowed; above that require approval”
+
+- **You (the platform)** ship:
+  - secure defaults
+  - templates (“Support agent”, “Finance agent”, “DevOps agent”)
+  - system guardrails (optionally non-overridable)
+
+- **Agent developers** may suggest a recommended policy set, but the final authority should remain with the org admin.
+
+---
+
+## How policies apply to actions
+
+Policies are evaluated at the enforcement point.
+
+Typical flow:
+1) An agent (or agent platform) forms an action request.
+2) The request is **signed** (proves who is making it).
+3) Your service calls **`/v1/check`** with:
+   - identity claims (agent passport, keys, attestations)
+   - the requested action + resource
+   - additional context (environment, risk signals, amounts, etc.)
+4) Clawb returns `allow` / `challenge` / `deny` (and optionally constraints).
+5) Your service enforces the result.
+
+> Important: If you return **constraints** (limits), the calling system must actually be able to enforce them.
 
 ---
 
 ## What goes into `context`
 
-The context object is where you describe what is happening.
+The context object describes what is happening *right now*.
 
-Examples of helpful context keys:
-- `action`: e.g. `"refund"`, `"deploy"`, `"transfer"`
-- `amount`: number (money amount)
+Most policies boil down to matching on:
+- **subject** (who): agent id, org/workspace, trust tier, attestations
+- **action** (what): capability/tool/endpoint (e.g. `"send_email"`, `"refund"`)
+- **resource** (where): tenant/resource identifiers, data classification
+- **environment** (when/how): `"staging"` vs `"prod"`, risk, cost, rate
+
+Examples of helpful keys:
+- `action`: e.g. `"send_email"`, `"refund"`, `"deploy"`
+- `resource`: what is being accessed (repo name, customer id, etc.)
 - `env`: `"staging"` or `"prod"`
+- `amount`: number (money amount)
 - `estimated_cost`: number (LLM/tool spend)
 - `change_risk`: `"low" | "medium" | "high"`
-- `resource`: what is being accessed (repo name, customer id, etc.)
 
-Example:
+Example request:
 ```json
 {
   "agent_id": "agt_...",
@@ -53,25 +96,37 @@ Example:
 
 ---
 
-## Common policy patterns (beginner-friendly)
+## Common policy patterns
 
 - **Small actions are allowed**
   - low amounts, staging deployments, low-risk changes
 
 - **Medium-risk actions are challenged**
-  - require a human approval step, a second factor, or a delay
+  - require a human approval step, a second factor, or a cooldown
 
 - **High-risk actions are denied by default**
-  - prod database deletes, big money transfers, unknown agents
+  - destructive prod actions, large value transfers, unknown agents
 
 ---
 
-## How you should use `challenge`
+## Challenges: what they are (and what they aren’t)
 
-Clawb doesn’t decide *how* you challenge—your app does.
+Clawb decides **when** to challenge. Your app decides **how** to challenge.
 
 Common challenge implementations:
-- require a human approval
-- require a 2nd signature (different key)
-- require an allowlist match (domain / repo / customer)
-- require a deposit / rate limit / cooldown
+- human approval in the dashboard
+- a 2nd signature from a different key
+- allowlist match (domain / repo / customer)
+- rate limit / cooldown
+
+---
+
+## Example: Email policy (a great v1 starter)
+
+Email is a good first use case because it’s easy to understand, has real risk, and supports both constraints and challenges.
+
+Example rules:
+- `allow` if recipients are within `@company.com`
+- `challenge` if any recipient is outside the company domain
+- `deny` for dangerous attachment types
+- rate limit per agent
