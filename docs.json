@@ -30,13 +30,15 @@
           {
             "group": "Policies",
             "pages": [
-              "policies/overview"
+              "policies/overview",
+              "policies/schema"
             ]
           },
           {
             "group": "Integration",
             "pages": [
               "integration/check",
+              "integration/email-sending",
               "integration/examples"
             ]
           },
@@ -57,7 +59,8 @@
             "group": "Verification service",
             "pages": [
               "verification/overview",
-              "verification/verify-api"
+              "verification/verify-api",
+              "verification/approval-links"
             ]
           },
           {

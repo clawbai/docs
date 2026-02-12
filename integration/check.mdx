@@ -4,6 +4,8 @@ title: Integrating /v1/check
 
 Your relying service calls Clawb **right before** executing a sensitive action.
 
+`/v1/check` is intentionally **server-to-server** (not agent-signed): the relying service verifies the agent signature on the *original* inbound request, then asks Clawb what to do.
+
 ## Request
 
 ```http
@@ -13,8 +15,12 @@ Content-Type: application/json
 {
   "agent_id": "agt_...",
   "policy_id": "pol_default",
+
+  // required: what the agent is trying to do
+  "action": "refund",
+
+  // optional: action-specific payload
   "context": {
-    "action": "refund",
     "amount": 49.00,
     "customer_id": "cus_123",
     "reason": "late delivery"
@@ -22,8 +28,50 @@ Content-Type: application/json
 }
 ```
 
+### Email constraint checks
+
+For `action: "send_email"`, include an `email` object so policy constraints can evaluate it:
+
+```json
+{
+  "agent_id": "agt_...",
+  "policy_id": "pol_default",
+  "action": "send_email",
+  "email": {
+    "to": ["a@example.com"],
+    "cc": [],
+    "bcc": [],
+    "subject": "Welcome",
+
+    // attachments are metadata-only for policy evaluation
+    "attachments": [
+      {"filename": "doc.pdf", "content_type": "application/pdf", "size_bytes": 12345}
+    ]
+  }
+}
+```
+
 ## Response
 
 ```json
-{ "decision": "allow" | "challenge" | "deny", "reasons": ["..."] }
+{
+  "decision": "allow" | "challenge" | "deny",
+  "confidence": 0.0,
+  "reasons": ["..."],
+
+  // present when decision=="challenge"
+  "challenge": {"type": "attest" | "telemetry", "url": "...", "detail": "..."},
+
+  // present on some denies (example: rate limits)
+  "retry_after_seconds": 12
+}
 ```
+
+## Provider API key (optional)
+
+If you include `X-CLAWB-API-KEY`, Clawb will:
+
+- enforce rate limits / quotas on that key
+- include an HMAC signature on the response (for easy integrity checks by the relying service)
+
+See: [Verification service](/verification/overview)

@@ -1,0 +1,47 @@
+---
+title: Policy config schema (v1)
+---
+
+Policies are stored as JSON under `Policy.config`.
+
+Today, Clawb ships with a small set of **built-in constraint blocks** that are evaluated during `/v1/check`.
+
+## Top-level fields
+
+Common keys:
+
+- `allow_pending` (boolean): if true, pending agents can receive `allow` for some actions
+- `require_active` (boolean): if true, non-active agents are denied
+
+## Email constraints (`email` / `send_email`)
+
+For `action: "send_email"`, Clawb looks for either:
+
+- `config.send_email`, or
+- `config.email` (alias)
+
+Supported constraints:
+
+```json
+{
+  "email": {
+    "allowed_domains": ["example.com"],
+    "max_recipients": 2,
+
+    "deny_attachment_types": [".exe", "application/x-msdownload"],
+    "max_attachment_bytes": 1000000,
+
+    "rate_limit_per_minute": 60,
+    "rate_limit_per_day": 1000
+  }
+}
+```
+
+Semantics:
+
+- `allowed_domains`: applied to **to/cc/bcc** domains
+- `max_recipients`: counts **to+cc+bcc**
+- attachment checks are **metadata-based** (filename/content_type/size_bytes)
+- rate limits are **per agent id**
+
+See: [Email sending enforcement](/integration/email-sending)

@@ -1,0 +1,69 @@
+---
+title: Email sending enforcement
+---
+
+Clawb can act as a **backend enforcement point** for email sending:
+
+1. Your service calls `POST /v1/check` with `action: "send_email"` and an `email` object (recipients, attachment metadata, etc.)
+2. If Clawb returns `allow`, your service calls `POST /v1/email/send` to send the email **server-side via SendGrid**
+3. If Clawb returns `deny` or `challenge`, your service must **not** send the email
+
+## Step 1 — Ask for a decision
+
+```json
+POST /v1/check
+
+{
+  "agent_id": "agt_...",
+  "policy_id": "pol_email",
+  "action": "send_email",
+  "email": {
+    "to": ["user@example.com"],
+    "subject": "Your receipt",
+    "attachments": []
+  }
+}
+```
+
+## Step 2 — Send (only if allowed)
+
+`/v1/email/send` requires a provider API key header.
+
+```json
+POST /v1/email/send
+X-CLAWB-API-KEY: <provider-key>
+
+{
+  "agent_id": "agt_...",
+  "policy_id": "pol_email",
+  "email": {
+    "to": ["user@example.com"],
+    "subject": "Your receipt",
+    "text": "Thanks for your purchase!",
+    "html": "<p>Thanks for your purchase!</p>"
+  }
+}
+```
+
+### Response
+
+```json
+{
+  "ok": true,
+  "provider": "sendgrid",
+  "provider_message_id": "..."
+}
+```
+
+### Blocked sends
+
+If policy evaluation denies or challenges, `/v1/email/send` returns **403** with a stable payload:
+
+```json
+{
+  "error": "policy_blocked",
+  "decision": "deny" | "challenge",
+  "reasons": ["..."],
+  "challenge": {"type": "...", "url": "..."}
+}
+```
