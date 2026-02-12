@@ -1,0 +1,29 @@
+---
+title: Challenges & approval links
+---
+
+Some `/v1/check` responses return `decision: "challenge"`.
+
+A **challenge** means: “don’t proceed automatically — require an extra step.”
+
+## Challenge lifecycle (v1)
+
+1. Your service calls `/v1/check`
+2. If the response is `challenge`, your service **must not execute** the sensitive action
+3. Your service presents the user/operator with the `challenge` instructions (usually a URL)
+4. After the challenge is satisfied, your service re-attempts the action (and re-calls `/v1/check`)
+
+## Approval-link security model
+
+Some challenges use “approval links” (magic URLs) as a lightweight human-in-the-loop mechanism.
+
+Security properties:
+
+- **Anyone with the link can approve/deny**
+- therefore, treat approval links like passwords:
+  - do not post them publicly
+  - do not log them to shared logs
+  - prefer short expirations
+  - send via trusted channels
+
+If you need stronger guarantees (who approved, multi-party approvals, etc.), you should build a stronger workflow on top (e.g., authenticated dashboard sessions).
