@@ -11,6 +11,7 @@ Your relying service calls Clawb **right before** executing a sensitive action.
 ```http
 POST /v1/check
 Content-Type: application/json
+X-Clawb-Api-Key: ck_live_...
 
 {
   "agent_id": "agt_...",
@@ -67,11 +68,14 @@ For `action: "send_email"`, include an `email` object so policy constraints can 
 }
 ```
 
-## Provider API key (optional)
+## Provider API key (required)
 
-If you include `X-CLAWB-API-KEY`, Clawb will:
+`/v1/check` requires a provider API key.
 
-- enforce rate limits / quotas on that key
-- include an HMAC signature on the response (for easy integrity checks by the relying service)
+```http
+X-Clawb-Api-Key: ck_live_...
+```
+
+This lets Clawb attribute usage, enforce rate limits/quotas, and scope checks to your workspace.
 
 See: [Verification service](/verification/overview)

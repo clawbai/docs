@@ -1,0 +1,84 @@
+---
+title: Provider integration flow (Verify → Check)
+---
+
+This page is for **API providers / relying services**.
+
+At a high level, you want to answer two questions for each inbound agent request:
+
+1) **Is this really the agent?** (identity)
+2) **Is this agent allowed to do this?** (authorization)
+
+Clawb supports two phases:
+
+- **Onboarding (one-time per agent identity):** create/attest an agent identity (outside the provider request path)
+- **Request-time (every call):** Verify → Check
+
+---
+
+## Onboarding (one-time)
+
+Onboarding is about creating an `agent_id` and binding it to an Ed25519 public key.
+
+Depending on your product, onboarding may be done by:
+- the **agent owner** (register + attest), or
+- the **provider** (provider-minted identities; API-only)
+
+> Onboarding is **not** done on every request.
+
+---
+
+## Request-time flow (every inbound request)
+
+### Step 1 — Verify the inbound request’s agent signature
+
+You have two options:
+
+**Option A (recommended): local verification**
+- Verify Ed25519 signature in your service.
+- Enforce timestamp skew + nonce replay protections.
+
+**Option B: online verification**
+- Call `POST /v1/verify` with your provider API key.
+- Clawb returns `valid=true|false` plus coarse tiers.
+
+See: `/v1/verify` docs.
+
+---
+
+### Step 2 — Check authorization with policy
+
+Call `POST /v1/check` with your provider API key:
+
+```http
+POST /v1/check
+Content-Type: application/json
+X-Clawb-Api-Key: ck_live_...
+
+{
+  "agent_id": "agt_...",
+  "policy_id": "pol_default",
+  "action": "send_email",
+  "email": {
+    "to": ["a@example.com"],
+    "subject": "Hello",
+    "text": "..."
+  }
+}
+```
+
+Clawb returns:
+- `allow` → proceed
+- `challenge` → step-up approval (human-in-the-loop)
+- `deny` → block
+
+---
+
+## Why two endpoints?
+
+- `/v1/verify` answers: **is the signature valid for this agent_id?**
+- `/v1/check` answers: **what should I do (allow/challenge/deny) given policy + context?**
+
+Many providers use both:
+- verify locally (fast) and
+- check with Clawb (central policy + audit)
