@@ -2,7 +2,22 @@
 title: Python SDK
 ---
 
-Minimal Python client for Clawb agent **registration**, **attestation**, and **request signing**.
+This page is a **step-by-step** guide to using the Clawb Python SDK.
+
+It covers both perspectives:
+
+- **Agent owners** (your agent runtime): register → attest → claim, then make **signed** calls.
+- **API providers / relying services** (your backend API): verify + check using a **provider API key**.
+
+> Base URL
+>
+> Most examples use:
+> 
+> - `https://api.clawb.ai/api`
+>
+> The `/api` prefix is part of the base URL.
+
+---
 
 ## Install
 
@@ -10,51 +25,287 @@ Minimal Python client for Clawb agent **registration**, **attestation**, and **r
 pip install clawb-agent-sdk
 ```
 
-(Or for development: `pip install -e .` inside the `python-sdk` repo.)
+Python requirement: **3.9+**.
 
-## CLI (agent bootstrap)
+---
 
-```bash
-# Register → attest → request claim code
-clawb-agent bootstrap --base-url https://api.clawb.ai/api --name "my-agent"
-```
+## Mental model (read this first)
 
-This prints:
-- `agent_id`
-- `public_key_b64`
-- `private_key_b64` (store securely)
-- a `claim_url` to paste into the dashboard
+### Identities
 
-## Quickstart (Python)
+- **`agent_id`**: the agent’s stable identifier in Clawb (example: `agt_...`).
+- **Ed25519 keypair**: used to sign requests.
+  - **public key** can be shared
+  - **private key** must be kept secret by the agent runtime
+
+### Two phases
+
+1) **Onboarding (one-time per agent identity)**
+   - Create keys
+   - Register
+   - Attest
+   - (Optional) Claim for dashboard ownership
+
+2) **Request-time (every request)**
+   - Agents send **signed** requests to Clawb (telemetry, vault, etc.)
+   - API providers call Clawb **server-to-server** to **Verify** and/or **Check**
+
+---
+
+## Part A — Agent onboarding (Register → Attest → Claim)
+
+### Step 1 — Generate keys (Ed25519)
 
 ```python
 from clawb_agent_sdk import ClawbClient
 
-base_url = "https://api.clawb.ai/api"  # or http://localhost:8000
-
-# 1) Create keys (Ed25519)
+# Generate an Ed25519 keypair locally.
+# - priv_b64: base64 PKCS8 private key (KEEP SECRET)
+# - pub_b64: base64 public key (safe to share)
 priv_b64, pub_b64 = ClawbClient.generate_ed25519_keypair_b64()
 
-# 2) Register to get a challenge
-client = ClawbClient(base_url=base_url)
-reg = client.register(name="my-agent", public_key_b64=pub_b64)
-
-# 3) Attest (prove key ownership)
-agent_id = reg["agent_id"]
-client = ClawbClient(base_url=base_url, agent_id=agent_id, private_key_b64=priv_b64)
-client.attest(challenge_id=reg["challenge_id"], challenge_b64=reg["challenge"])
-
-# 4a) Signed agent-owned call (example)
-resp = client.post("/v1/telemetry/heartbeat", json={"agent_id": agent_id, "status": "ok"})
-print("heartbeat", resp["status"], resp["json"])
-
-# 4b) Unsigned relying-service call (example): /v1/check
-checker = ClawbClient(base_url=base_url)
-decision = checker.check(agent_id=agent_id, policy_id="pol_default")
-print("check", decision)
+print("public_key_b64:", pub_b64)
 ```
+
+**Why this matters:** Clawb never needs your private key. Your agent signs with it.
+
+---
+
+### Step 2 — Register (unsigned)
+
+Register creates an `agent_id` and returns a challenge.
+
+SDK call:
+
+```python
+base_url = "https://api.clawb.ai/api"
+
+client = ClawbClient(base_url=base_url)
+reg = client.register(
+    name="my-agent",
+    public_key_b64=pub_b64,
+    # key_type defaults to "ed25519"
+    metadata={"source": "python-sdk"},
+)
+
+print(reg)
+```
+
+#### Register payload (what is sent)
+
+The SDK sends:
+
+```json
+{
+  "name": "my-agent",
+  "public_key": "<public_key_b64>",
+  "key_type": "ed25519",
+  "metadata": {"source": "python-sdk"}
+}
+```
+
+#### Register response (what you get back)
+
+You’ll receive JSON that includes (at minimum):
+- `agent_id`: your new agent identifier
+- `challenge_id`: id for the attestation challenge
+- `challenge`: base64 challenge bytes
+
+---
+
+### Step 3 — Attest (unsigned)
+
+Attestation proves you own the private key corresponding to the public key you registered.
+
+SDK call:
+
+```python
+agent_id = reg["agent_id"]
+
+# Create a client that can sign (agent-owned)
+agent_client = ClawbClient(
+    base_url=base_url,
+    agent_id=agent_id,
+    private_key_b64=priv_b64,
+)
+
+att = agent_client.attest(
+    challenge_id=reg["challenge_id"],
+    challenge_b64=reg["challenge"],
+)
+
+print(att)
+```
+
+#### What’s happening here
+
+- Clawb gave you a challenge (random bytes, base64).
+- The SDK signs those bytes with your private key.
+- Clawb verifies the signature and marks the agent as “attested” (or keeps it pending based on your workflow).
+
+---
+
+### Step 4 — Claim code (signed)
+
+Claiming is a **dashboard ownership** step.
+
+- Useful when a human wants to manage the agent in the dashboard.
+- Not strictly required for all provider-only use-cases.
+
+SDK call:
+
+```python
+claim = agent_client.request_claim_code()
+print(claim)
+
+# The response typically includes:
+# - claim_code
+# - claim_url (open in browser)
+# - expires_at
+```
+
+---
+
+## Part B — Making signed agent calls
+
+### Example: telemetry heartbeat (signed)
+
+```python
+resp = agent_client.post(
+    "/v1/telemetry/heartbeat",
+    json={"agent_id": agent_id, "status": "ok", "latency_ms": 123},
+)
+
+print(resp["status"], resp["json"])
+```
+
+#### Heartbeat payload
+
+```json
+{
+  "agent_id": "agt_...",
+  "status": "ok",
+  "latency_ms": 123
+}
+```
+
+---
+
+## Part C — API providers (Verify + Check) using ApiProvider helpers
+
+API providers are server-side backends that receive requests from agents.
+
+They typically:
+
+1) **Verify** the agent signature (locally or via `/v1/verify`)
+2) **Check** authorization via `/v1/check`
+
+Both endpoints are designed for **server-to-server** usage and require a **provider API key**.
+
+### Setup
+
+```python
+from clawb_agent_sdk import ClawbClient, ApiProvider
+
+base_url = "https://api.clawb.ai/api"
+provider_api_key = "ck_live_..."  # provider key issued in the dashboard
+
+provider_client = ClawbClient(base_url=base_url)
+api = ApiProvider(client=provider_client, api_key=provider_api_key)
+```
+
+---
+
+### Step 1 — Online verify (optional)
+
+Use this if you want Clawb to validate the agent signature for you.
+
+You must build the payload from the **original inbound request** that your API received.
+
+Required fields:
+- `agent_id`: from `X-Clawb-Agent-Id`
+- `method`: HTTP method (e.g. `POST`)
+- `path`: URL path only (e.g. `/v1/refunds`)
+- `timestamp_ms`: from `X-Clawb-Timestamp`
+- `nonce`: from `X-Clawb-Nonce`
+- `body_sha256`: lowercase hex sha256 of the raw request body bytes
+- `signature_b64`: from `X-Clawb-Signature`
+
+Example:
+
+```python
+# Example inbound request values (you would read these from your framework)
+agent_id = "agt_..."
+method = "POST"
+path = "/v1/refunds"
+timestamp_ms = 1700000000000
+nonce = "n_123"
+raw_body = b'{"amount":49.00}'
+
+body_sha256 = api.sha256_hex(raw_body)
+signature_b64 = "..."  # from X-Clawb-Signature
+
+verify_out = api.verify(
+    agent_id=agent_id,
+    method=method,
+    path=path,
+    timestamp_ms=timestamp_ms,
+    nonce=nonce,
+    body_sha256=body_sha256,
+    signature_b64=signature_b64,
+)
+
+print(verify_out)
+# verify_out["valid"] is True/False
+```
+
+---
+
+### Step 2 — Check authorization (required)
+
+Once you’re satisfied the agent is who it says it is, ask Clawb for a policy decision.
+
+```python
+decision = api.check(
+    agent_id=agent_id,
+    policy_id="pol_default",
+    action="refund",
+    context={"amount": 49.00, "currency": "USD"},
+)
+
+print(decision)
+# decision["decision"] is "allow" | "challenge" | "deny"
+```
+
+---
+
+## Part D — Vault helpers (agent-signed)
+
+If your agent uses Vault:
+
+```python
+from clawb_agent_sdk import VaultProvider
+
+vault = VaultProvider(client=agent_client)
+
+# Example: evaluate access
+out = vault.policy_eval(secret_set_id=123, action="export", keys=["OPENAI_API_KEY"], environment="prod")
+print(out)
+```
+
+---
+
+## CLI bootstrap (one-liner)
+
+If you prefer a one-command onboarding flow:
+
+```bash
+clawb-agent bootstrap --base-url https://api.clawb.ai/api --name "my-agent"
+```
+
+---
 
 ## Links
 
 - Python SDK repo: https://github.com/clawbai/python-sdk
-- Full README (source of truth): https://github.com/clawbai/python-sdk#readme
+- Provider flow (Verify → Check): https://docs.clawb.ai/integration/provider-flow
