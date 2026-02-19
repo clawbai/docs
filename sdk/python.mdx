@@ -166,20 +166,21 @@ print(claim)
 
 ---
 
-## Part B — Making signed agent calls
+## Part B — Telemetry (signed)
 
-### Example: telemetry heartbeat (signed)
+Telemetry is how your agent reports health + outcomes to Clawb.
 
-```python
-resp = agent_client.post(
-    "/v1/telemetry/heartbeat",
-    json={"agent_id": agent_id, "status": "ok", "latency_ms": 123},
-)
+### What endpoint to call
 
-print(resp["status"], resp["json"])
-```
+- **Endpoint:** `POST /v1/telemetry/heartbeat`
+- **Auth:** agent-signed (the SDK adds signing headers automatically when you use `ClawbClient(..., agent_id, private_key_b64)`)
 
-#### Heartbeat payload
+### Recommended cadence
+
+- Send a heartbeat periodically (for example every **30–60 seconds**).
+- For bursty agents, you can send heartbeats only when work happens.
+
+### Heartbeat fields (payload)
 
 ```json
 {
@@ -188,6 +189,59 @@ print(resp["status"], resp["json"])
   "latency_ms": 123
 }
 ```
+
+Field meaning:
+- `agent_id` (string, required): the agent identity.
+- `status` (string, optional): usually `ok` or `error`.
+- `latency_ms` (number, optional): how long the last operation took.
+
+### Example: send a heartbeat (SDK)
+
+```python
+# A client that can sign agent-owned requests
+agent_client = ClawbClient(
+    base_url=base_url,
+    agent_id=agent_id,
+    private_key_b64=priv_b64,
+)
+
+resp = agent_client.post(
+    "/v1/telemetry/heartbeat",
+    json={
+        "agent_id": agent_id,
+        "status": "ok",
+        "latency_ms": 123,
+    },
+)
+
+print("http_status:", resp["status"])
+print("json:", resp["json"])
+```
+
+### Example: heartbeat loop (safe + simple)
+
+```python
+import time
+
+while True:
+    t0 = time.time()
+
+    # ... do work here ...
+
+    latency_ms = int((time.time() - t0) * 1000)
+
+    agent_client.post(
+        "/v1/telemetry/heartbeat",
+        json={"agent_id": agent_id, "status": "ok", "latency_ms": latency_ms},
+    )
+
+    time.sleep(60)
+```
+
+### Common mistakes
+
+- **Signing not configured:** if you create `ClawbClient(base_url=...)` without `agent_id` and `private_key_b64`, signed calls will fail.
+- **Hash mismatch (if you implement signing yourself):** the signature uses `SHA256(body)` of the raw bytes.
 
 ---
 
