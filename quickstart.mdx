@@ -4,7 +4,7 @@ title: Quickstart
 
 ## What you’re building
 
-You’re putting Clawb in front of sensitive actions by calling **`POST /v1/check`** with context about the action.
+You’re putting Clawb in front of sensitive actions by calling **`POST /v1/check`** with the action and its context.
 
 Clawb returns a decision:
 - `allow` → proceed
@@ -40,7 +40,8 @@ Content-Type: application/json
 {
   "agent_id": "agt_...",
   "policy_id": "pol_default",
-  "context": { "action": "refund", "amount": 49.00 }
+  "action": "refund",
+  "context": { "amount": 49.00 }
 }
 ```
 
