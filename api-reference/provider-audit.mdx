@@ -1,0 +1,83 @@
+---
+title: Provider audit APIs
+description: Query and export provider-scoped audit events.
+---
+
+Use these APIs for investigations, compliance exports, and operational tracing.
+
+## GET `/v1/provider/audit/events`
+
+Returns provider-scoped audit items.
+
+### Query params
+
+- `start_ms`, `end_ms`
+- `agent_id`
+- `action`
+- `decision`
+- `trace_id`
+- `limit` (default 50, max 200)
+- `cursor` (for pagination)
+
+### Curl example
+
+```bash
+curl -sS "https://api.clawb.ai/api/v1/provider/audit/events?agent_id=agt_123&limit=100" \
+  -H "X-Clawb-Api-Key: ck_live_..."
+```
+
+### Python SDK example
+
+```python
+# Pull a time-window of decisions.
+out = provider.provider_audit_events(
+    start_ms=1739952000000,
+    end_ms=1740038399000,
+    decision="deny",
+    limit=100,
+)
+
+for item in out.get("items", []):
+    # item metadata usually contains action and trace fields.
+    print(item["created_at"], item["event_type"], item.get("decision"))
+
+print("next_cursor:", out.get("next_cursor"))
+```
+
+## POST `/v1/provider/audit/export`
+
+Exports events as JSON or CSV (synchronous).
+
+### Request body
+
+```json
+{
+  "format": "csv",
+  "filters": {
+    "start_ms": 1739952000000,
+    "end_ms": 1740038399000,
+    "decision": "deny"
+  },
+  "limit": 1000
+}
+```
+
+### Python SDK example
+
+```python
+export = provider.provider_audit_export(
+    format="csv",
+    filters={"decision": "deny"},
+    limit=500,
+)
+
+# CSV export returns a single CSV string field.
+csv_blob = export.get("csv", "")
+print("csv bytes:", len(csv_blob.encode("utf-8")))
+```
+
+### Errors
+
+- `401 {"error":"missing_api_key"}`
+- `400 {"error":"invalid_format"}`
+- `500 {"error":"audit_unavailable"}`

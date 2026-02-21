@@ -1,0 +1,78 @@
+---
+title: Enterprise policy sync API
+description: Apply desired-state policy specs through a CI/CD-friendly sync endpoint.
+---
+
+Use this endpoint to treat policy configuration as code.
+
+## POST `/v1/policies/sync`
+
+### Auth
+
+Dashboard user session auth (not provider API key).
+
+### Request body
+
+```json
+{
+  "policy_id": "pol_enterprise_sync",
+  "policy_name": "Enterprise Policy Sync",
+  "dry_run": false,
+  "expected_policy_hash": "sha256:...",
+  "spec": {
+    "reusable_policy_blocks": {},
+    "agent_groups": [],
+    "bindings": [],
+    "global_guardrails": {}
+  }
+}
+```
+
+### Idempotency
+
+You can set `Idempotency-Key` header to make repeated CI retries safe.
+
+```http
+Idempotency-Key: deploy-2026-02-21-001
+```
+
+### Curl example
+
+```bash
+curl -sS -X POST https://api.clawb.ai/api/v1/policies/sync \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: deploy-2026-02-21-001" \
+  -b "<dashboard-session-cookie>" \
+  -d '{"dry_run":true,"spec":{"reusable_policy_blocks":{},"agent_groups":[],"bindings":[],"global_guardrails":{}}}'
+```
+
+### Response patterns
+
+- Dry run:
+
+```json
+{
+  "ok": true,
+  "dry_run": true,
+  "policy_id": "pol_enterprise_sync",
+  "current_policy_hash": "...",
+  "desired_policy_hash": "...",
+  "diff": {"changed": true}
+}
+```
+
+- Conflict:
+
+```json
+{
+  "error": "sync_conflict",
+  "current_policy_hash": "..."
+}
+```
+
+### Junior developer workflow
+
+1. Run `dry_run=true` first in CI.
+2. Validate `diff` output.
+3. Apply with `dry_run=false` and idempotency key.
+4. Fail the pipeline on `sync_conflict` and rebase policy source.

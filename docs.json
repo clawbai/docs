@@ -38,10 +38,25 @@
             "group": "Integration",
             "pages": [
               "integration/provider-flow",
+              "integration/provider-control-plane-tutorial",
               "integration/end-to-end",
               "integration/check",
               "integration/email-sending",
               "integration/examples"
+            ]
+          },
+          {
+            "group": "API reference",
+            "pages": [
+              "api-reference/introduction",
+              "api-reference/public-metadata",
+              "api-reference/provider-agents",
+              "api-reference/provider-audit",
+              "api-reference/identity-credentials",
+              "api-reference/identity-kill-switch",
+              "api-reference/reputation-feedback",
+              "api-reference/policies-sync",
+              "api-reference/telemetry"
             ]
           },
           {

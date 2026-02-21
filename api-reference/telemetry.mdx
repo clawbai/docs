@@ -1,0 +1,54 @@
+---
+title: Telemetry APIs
+description: Ingest and query agent heartbeat telemetry used by reputation and policy workflows.
+---
+
+Telemetry helps Clawb maintain current health signals for each agent.
+
+## POST `/v1/telemetry/heartbeat`
+
+### Auth
+
+Agent-signed request.
+
+### Request body
+
+```json
+{
+  "agent_id": "agt_01...",
+  "status": "ok",
+  "latency_ms": 123
+}
+```
+
+### Python SDK example
+
+```python
+from clawb_agent_sdk import ClawbClient
+
+agent_client = ClawbClient(
+    base_url="https://api.clawb.ai/api",
+    agent_id="agt_01...",
+    private_key_b64="<agent-private-key-b64>",
+)
+
+# Signed automatically because agent_id + private_key_b64 are set.
+out = agent_client.post(
+    "/v1/telemetry/heartbeat",
+    json={"agent_id": "agt_01...", "status": "ok", "latency_ms": 88},
+)
+print(out)
+```
+
+### Errors
+
+- `400 {"error":"missing_agent_id"}`
+- `401 {"error":"agent_header_mismatch"}`
+- `404 {"error":"unknown_agent"}`
+
+## Additional telemetry endpoints
+
+- `POST /v1/telemetry/heartbeat/ingest`
+- `GET /v1/telemetry/heartbeat/recent`
+
+These are useful for ingestion pipelines and recent heartbeat views.
