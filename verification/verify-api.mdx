@@ -2,78 +2,41 @@
 title: Verification API (v1)
 ---
 
-This page describes the provider-facing Verification API.
+This page describes provider-facing verification and feedback APIs.
 
-Goal: help API providers answer “should I trust this agent request?”
-
----
-
-## Auth
-Providers use a **provider API key**.
-
-Preferred header:
+## Provider auth
 
 ```http
-X-Clawb-Api-Key: ck_live_9f2b3c4d5e6f7a8b
+# Preferred
+X-Clawb-Api-Key: ck_live_...
+
+# Alternative
+Authorization: Bearer ck_live_...
 ```
 
-Accepted alternative:
+## POST `/v1/verify`
 
-```http
-Authorization: Bearer ck_live_9f2b3c4d5e6f7a8b
-```
+Online identity verification for signed agent requests.
 
-Use provider keys with the `ck_live_` or `ck_test_` prefix. Do not use `prv_` tokens for these endpoints.
+### Canonical format
 
-<Info>
-  **Auth quick reference**
-
-  ```http
-  # Preferred
-  X-Clawb-Api-Key: ck_live_9f2b3c4d5e6f7a8b
-
-  # Alternative
-  Authorization: Bearer ck_live_9f2b3c4d5e6f7a8b
-  ```
-</Info>
-
----
-
-## Verify an agent request (online)
-
-Clawb verifies the agent’s Ed25519 signature over the canonical string:
-
-```
+```text
 METHOD\nPATH\nTIMESTAMP_MS\nNONCE\nBODY_SHA256
 ```
 
-Request:
+### Request
 
-```http
-POST /v1/verify
-Content-Type: application/json
-X-Clawb-Api-Key: ck_live_9f2b3c4d5e6f7a8b
-
+```json
 {
   "agent_id": "agt_...",
   "method": "POST",
   "path": "/v1/refunds",
-  "timestamp_ms": 1700000000000,
-  "nonce": "n_123",
-  "body_sha256": "<lowercase-hex>",
+  "timestamp_ms": 1740137855000,
+  "nonce": "2f8d8b19-5e0a-4f8b-b7d4-6dc15b1fe201",
+  "body_sha256": "3adfd3eb02f15d4f4b5a9f5b2d18f8d1b6d8a7eac03f4b7a56ec8f8c2f2ff321",
   "signature_b64": "<base64>"
 }
 ```
-
-Timestamp must be `milliseconds`; using `seconds` causes signature validation failure.
-
-Request field notes:
-- `method`: use uppercase HTTP method (`GET`, `POST`, and so on)
-- `path`: include only the path (`/v1/refunds`), not scheme, host, or query string
-- `timestamp_ms`: unix epoch milliseconds from `X-Clawb-Timestamp`
-- `nonce`: pass through the exact `X-Clawb-Nonce` value
-- `body_sha256`: lowercase hex SHA-256 of the exact raw request body bytes
-- `signature_b64`: pass through the exact `X-Clawb-Signature` value
 
 ### Response
 
@@ -84,59 +47,58 @@ Request field notes:
   "verification_tier": "attested",
   "risk_tier": "low",
   "revoked": false,
-  "disclosure": {
-    "disclosed": {
-      "...": "..."
-    }
-  }
+  "disclosure": {"disclosed": {}}
 }
 ```
 
-Notes:
-- `owner` fields may be omitted when disclosure is disabled.
-- Providers should not treat omitted identity as a failure.
-- `response_signature` lets you verify the response is authentic.
+### Common failures
 
----
+- `401` missing or invalid provider key
+- `429` rate limited
+- `200` with `valid=false` for signature failures
 
-## Offline verification (optional)
-For low-latency or high-volume integrations, agents can include an **assertion token** (JWT-like) that providers can validate locally.
+## POST `/v1/reputation/feedback`
 
-Recommended approach:
-- validate the token signature using Clawb’s public keys
-- enforce short expirations
-- optionally call `/v1/verify` for revocation checks or higher-risk operations
+Provider feedback with required HMAC signature headers.
 
----
+### Required headers
 
-## Error modes
-Expected errors:
-- `401` missing or invalid provider API key
-- `429` rate limited / quota exceeded
-- `400` malformed request
-- `200` with `valid=false` for signature failures (enumeration-safe)
+- `X-Clawb-Feedback-Timestamp`
+- `X-Clawb-Feedback-Nonce`
+- `X-Clawb-Feedback-Signature`
 
----
+### Signature message
 
-## Provider feedback (reputation signals)
-Providers can submit feedback to improve ecosystem safety.
-
-```http
-POST /v1/reputation/feedback
-X-Clawb-Api-Key: ck_live_9f2b3c4d5e6f7a8b
-Content-Type: application/json
-
-{
-  "agent_id": "agt_...",
-  "signal": "abuse_suspected",
-  "severity": "high",
-  "evidence": {
-    "request_ids": ["..."],
-    "notes": "credential stuffing pattern"
-  },
-  "timestamp": "2026-02-11T20:11:12Z",
-  "signature": "base64:..."
-}
+```text
+{timestamp_ms}\n{nonce}\n{sha256(body)}
 ```
 
-Clawb rate-limits and attributes feedback, and uses it as an input signal for reputation.
+### SDK example (recommended)
+
+```python
+from clawb_agent_sdk import ClawbClient, ApiProvider
+
+client = ClawbClient(base_url="https://api.clawb.ai/api")
+provider = ApiProvider(client=client, api_key="ck_live_...")
+
+# SDK computes timestamp/nonce/signature headers automatically.
+provider.reputation_feedback(
+    agent_id="agt_01...",
+    verdict="bad",
+    evidence={"reason": "abuse_suspected"},
+)
+```
+
+### Failure modes
+
+- `401 missing_signature_headers`
+- `401 timestamp_out_of_range`
+- `401 bad_signature`
+- `401 replay_detected`
+- `400 invalid_verdict`
+- `404 unknown_agent`
+
+## Related docs
+
+- [Provider integration flow](/integration/provider-flow)
+- [Provider reputation feedback API](/api-reference/reputation-feedback)

@@ -1,0 +1,87 @@
+---
+title: Public metadata endpoints
+description: OpenID configuration and JWKS endpoints for local JWT verification and key rotation.
+---
+
+Use these endpoints when you verify Clawb-issued JWT credentials locally.
+
+## GET `/.well-known/openid-configuration`
+
+Returns issuer metadata and JWKS URL.
+
+### Auth
+
+No auth required.
+
+### Curl example
+
+```bash
+curl -sS https://api.clawb.ai/api/.well-known/openid-configuration
+```
+
+### Example response
+
+```json
+{
+  "issuer": "https://api.clawb.ai/api",
+  "jwks_uri": "https://api.clawb.ai/api/.well-known/clawb/jwks.json",
+  "id_token_signing_alg_values_supported": ["EdDSA"],
+  "subject_types_supported": ["public"],
+  "response_types_supported": ["token"]
+}
+```
+
+## GET `/.well-known/clawb/jwks.json`
+
+Returns active and previous issuer public keys in JWK format.
+
+### Auth
+
+No auth required.
+
+### Curl example
+
+```bash
+curl -sS https://api.clawb.ai/api/.well-known/clawb/jwks.json
+```
+
+### Example response
+
+```json
+{
+  "keys": [
+    {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "alg": "EdDSA",
+      "use": "sig",
+      "kid": "kid_01abc...",
+      "x": "11qYAYLef..."
+    }
+  ]
+}
+```
+
+## Python SDK example
+
+```python
+from clawb_agent_sdk import ClawbClient
+
+# This base URL must include /api.
+client = ClawbClient(base_url="https://api.clawb.ai/api")
+
+# 1) Discover issuer metadata.
+cfg = client.well_known_openid_configuration()
+print("issuer:", cfg["issuer"])
+print("jwks_uri:", cfg["jwks_uri"])
+
+# 2) Fetch keys for JWT signature verification.
+jwks = client.well_known_jwks()
+print("num_keys:", len(jwks.get("keys", [])))
+```
+
+## Operational notes
+
+- Cache headers are intentionally short so key rotation propagates quickly.
+- Prefer resolving `kid` from JWT header and selecting that exact JWK.
+- Keep a fallback strategy when key lookup fails (refresh JWKS, then retry once).

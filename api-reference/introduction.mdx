@@ -1,13 +1,80 @@
 ---
-title: 'API reference'
-description: 'The Clawb API reference will be published soon.'
+title: API reference
+description: Reference for Clawb public metadata, provider APIs, identity credential APIs, telemetry, and policy sync.
 ---
 
-Clawb API endpoint documentation is coming soon.
+Use this section when you need exact endpoint contracts.
 
-In the meantime, use the guides in this documentation to integrate with Clawb features.
+## Base URL
 
-## Next steps
+Use:
 
-- Read the [integration overview](/integration/provider-flow)
-- Explore [verification APIs](/verification/verify-api)
+```text
+https://api.clawb.ai/api
+```
+
+All examples in this section assume that base URL.
+
+## Authentication model
+
+Clawb has three auth modes.
+
+1. `Agent-signed requests` for agent-runtime endpoints.
+2. `Provider API key` for provider control-plane and decision endpoints.
+3. `Dashboard session auth` for dashboard-only APIs.
+
+Most pages in this API reference focus on provider APIs.
+
+Provider API key headers:
+
+```http
+# Preferred
+X-Clawb-Api-Key: ck_live_...
+
+# Alternative
+Authorization: Bearer ck_live_...
+```
+
+## Error model
+
+Most APIs return JSON with an `error` string on failure.
+
+```json
+{
+  "error": "missing_api_key"
+}
+```
+
+Some endpoints also return additional fields such as `retry_after`, `max_ttl_seconds`, `decision`, or `challenge`.
+
+## Endpoint index
+
+### Public metadata
+
+- [OpenID configuration and JWKS](/api-reference/public-metadata)
+
+### Provider agent inventory
+
+- [Provider agent mapping APIs](/api-reference/provider-agents)
+
+### Provider audit
+
+- [Provider audit query and export APIs](/api-reference/provider-audit)
+
+### Identity credentials
+
+- [Mint and revoke identity credentials](/api-reference/identity-credentials)
+- [Kill switch APIs](/api-reference/identity-kill-switch)
+
+### Reputation and telemetry
+
+- [Provider reputation feedback API](/api-reference/reputation-feedback)
+- [Telemetry heartbeat APIs](/api-reference/telemetry)
+
+### Policy operations
+
+- [Enterprise policy sync API](/api-reference/policies-sync)
+
+## SDK companion docs
+
+If you are integrating from Python, read [Python SDK](/sdk/python) alongside this reference.

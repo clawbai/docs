@@ -1,0 +1,75 @@
+---
+title: Provider reputation feedback API
+description: Submit signed provider feedback signals with replay and timestamp protections.
+---
+
+Providers can send explicit good/bad verdict signals for agent behavior.
+
+## POST `/v1/reputation/feedback`
+
+### Auth and signature requirements
+
+You must send all of the following:
+
+- `X-Clawb-Api-Key`
+- `X-Clawb-Feedback-Timestamp` (unix ms)
+- `X-Clawb-Feedback-Nonce`
+- `X-Clawb-Feedback-Signature` (base64 HMAC-SHA256)
+
+Signature message format:
+
+```text
+{timestamp_ms}\n{nonce}\n{sha256(body)}
+```
+
+### Request body
+
+```json
+{
+  "agent_id": "agt_01...",
+  "verdict": "bad",
+  "evidence": {
+    "reason": "credential_stuffing_pattern",
+    "request_ids": ["req_1", "req_2"]
+  }
+}
+```
+
+### Python SDK example (recommended)
+
+```python
+from clawb_agent_sdk import ClawbClient, ApiProvider
+
+client = ClawbClient(base_url="https://api.clawb.ai/api")
+provider = ApiProvider(client=client, api_key="ck_live_...")
+
+# The SDK automatically builds feedback signature headers.
+out = provider.reputation_feedback(
+    agent_id="agt_01...",
+    verdict="bad",
+    evidence={"reason": "credential_stuffing_pattern"},
+)
+print(out)  # {"ok": True}
+```
+
+### Curl example
+
+Use the SDK for signing in production. Curl is best for replaying already-signed test requests.
+
+```bash
+curl -sS -X POST https://api.clawb.ai/api/v1/reputation/feedback \
+  -H "Content-Type: application/json" \
+  -H "X-Clawb-Api-Key: ck_live_..." \
+  -H "X-Clawb-Feedback-Timestamp: 1740137855000" \
+  -H "X-Clawb-Feedback-Nonce: 2f8d8b19-5e0a-4f8b-b7d4-6dc15b1fe201" \
+  -H "X-Clawb-Feedback-Signature: <base64-hmac-signature>" \
+  -d '{"agent_id":"agt_01...","verdict":"bad","evidence":{"reason":"credential_stuffing_pattern"}}'
+```
+
+### Errors
+
+- `401 {"error":"missing_api_key"|"missing_signature_headers"|"bad_signature"|"replay_detected"}`
+- `401 {"error":"timestamp_out_of_range"}`
+- `400 {"error":"missing_agent_id"|"invalid_verdict"}`
+- `404 {"error":"unknown_agent"}`
+- `429 {"error":"rate_limited"}`

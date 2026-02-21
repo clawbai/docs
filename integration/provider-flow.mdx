@@ -2,97 +2,98 @@
 title: Provider integration flow (Verify → Check)
 ---
 
-This page is for **API providers / relying services**.
+This page is for API providers and relying services.
 
-At a high level, you want to answer two questions for each inbound agent request:
+At request time, answer two questions:
 
-1) **Is this really the agent?** (identity)
-2) **Is this agent allowed to do this?** (authorization)
+1. Is this request really from the claimed agent?
+2. Is this agent allowed to perform this action now?
 
-Clawb supports two phases:
-
-<Info>
-  **Auth quick reference**
-
-  ```http
-  # Preferred
-  X-Clawb-Api-Key: ck_live_9f2b3c4d5e6f7a8b
-
-  # Alternative
-  Authorization: Bearer ck_live_9f2b3c4d5e6f7a8b
-  ```
-
-  Use provider keys with the `ck_live_` or `ck_test_` prefix.
-</Info>
-
-- **Onboarding (one-time per agent identity):** create/attest an agent identity (outside the provider request path)
-- **Request-time (every call):** Verify → Check
-
----
-
-## Onboarding (one-time)
-
-Onboarding is about creating an `agent_id` and binding it to an Ed25519 public key.
-
-Depending on your product, onboarding may be done by:
-- the **agent owner** (register + attest), or
-- the **provider** (provider-minted identities; API-only)
-
-> Onboarding is **not** done on every request.
-
----
-
-## Request-time flow (every inbound request)
-
-### Step 1 — Verify the inbound request’s agent signature
-
-You have two options:
-
-**Option A (recommended): local verification**
-- Verify Ed25519 signature in your service.
-- Enforce timestamp skew + nonce replay protections.
-
-**Option B: online verification**
-- Call `POST /v1/verify` with your provider API key.
-- Clawb returns `valid=true|false` plus coarse tiers.
-
-See: `/v1/verify` docs.
-
----
-
-### Step 2 — Check authorization with policy
-
-Call `POST /v1/check` with your provider API key:
+## Auth quick reference
 
 ```http
-POST /v1/check
-Content-Type: application/json
-X-Clawb-Api-Key: ck_live_9f2b3c4d5e6f7a8b
+# Preferred
+X-Clawb-Api-Key: ck_live_...
 
-{
-  "agent_id": "agt_...",
-  "policy_id": "pol_default",
-  "action": "send_email",
-  "email": {
-    "to": ["a@example.com"],
-    "subject": "Hello",
-    "text": "..."
-  }
-}
+# Alternative
+Authorization: Bearer ck_live_...
 ```
 
-Clawb returns:
-- `allow` → proceed
-- `challenge` → step-up approval (human-in-the-loop)
-- `deny` → block
+## Request-time flow
 
----
+### Step 1: verify identity
 
-## Why two endpoints?
+- Option A (recommended): local Ed25519 verification
+- Option B: online verification with `POST /v1/verify`
 
-- `/v1/verify` answers: **is the signature valid for this agent_id?**
-- `/v1/check` answers: **what should I do (allow/challenge/deny) given policy + context?**
+### Step 2: enforce policy
 
-Many providers use both:
-- verify locally (fast) and
-- check with Clawb (central policy + audit)
+Call `POST /v1/check` with `agent_id`, `policy_id`, `action`, and optional context.
+
+Possible decisions:
+
+- `allow`
+- `challenge`
+- `deny`
+
+## Control-plane flow (new)
+
+In addition to request-time verify/check, providers now run a control plane.
+
+### Agent inventory mapping
+
+- `POST /v1/provider/agents/upsert`
+- `GET /v1/provider/agents`
+
+### Audit query and export
+
+- `GET /v1/provider/audit/events`
+- `POST /v1/provider/audit/export`
+
+### Short-lived credentials
+
+- `POST /v1/identity/credentials/mint`
+- `POST /v1/identity/credentials/revoke`
+- `POST /v1/identity/credentials/revoke-by-agent`
+
+### Incident controls
+
+- `POST /v1/identity/kill-switch/minting`
+- `POST /v1/identity/kill-switch/revoke-all`
+- `GET /v1/identity/kill-switch/status`
+
+### Reputation feedback
+
+- `POST /v1/reputation/feedback` (signed feedback headers)
+
+## Recommended architecture
+
+1. Edge layer verifies inbound agent signatures.
+2. Decision layer calls `/v1/check`.
+3. Control-plane jobs sync provider inventory and export audits.
+4. Sensitive follow-on actions use short-lived minted credentials.
+5. Security operations can pause minting and revoke all credentials quickly.
+
+## Python SDK starter
+
+```python
+from clawb_agent_sdk import ClawbClient, ApiProvider
+
+client = ClawbClient(base_url="https://api.clawb.ai/api")
+provider = ApiProvider(client=client, api_key="ck_live_...")
+
+# request-time
+provider.verify(...)
+provider.check(...)
+
+# control-plane
+provider.provider_agents_upsert(...)
+provider.provider_audit_events(limit=50)
+provider.identity_credentials_mint(agent_id="agt_01...", ttl_seconds=300)
+```
+
+## Next steps
+
+- [Provider control plane tutorial](/integration/provider-control-plane-tutorial)
+- [Provider audit APIs](/api-reference/provider-audit)
+- [Identity credential APIs](/api-reference/identity-credentials)

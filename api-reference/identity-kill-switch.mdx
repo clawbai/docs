@@ -1,0 +1,57 @@
+---
+title: Identity kill switch APIs
+description: Pause credential minting and revoke all minted credentials for incident response.
+---
+
+Use kill-switch endpoints during security incidents.
+
+## POST `/v1/identity/kill-switch/minting`
+
+Pause or resume minting.
+
+### Request
+
+```json
+{
+  "paused": true,
+  "reason": "incident INC-123"
+}
+```
+
+### Python SDK
+
+```python
+# Pause all minting in this workspace.
+provider.identity_kill_switch_minting(paused=True, reason="incident INC-123")
+
+# Resume after remediation.
+provider.identity_kill_switch_minting(paused=False, reason="incident closed")
+```
+
+## POST `/v1/identity/kill-switch/revoke-all`
+
+Sets a workspace cutoff timestamp so existing minted credentials are treated as revoked.
+
+```python
+provider.identity_kill_switch_revoke_all(reason="key compromise")
+```
+
+## GET `/v1/identity/kill-switch/status`
+
+```python
+status = provider.identity_kill_switch_status()
+print(status)
+# {
+#   "ok": True,
+#   "minting_paused": False,
+#   "all_credentials_revoked_at": None
+# }
+```
+
+## Incident sequence
+
+1. Pause minting.
+2. Revoke all credentials.
+3. Rotate keys and fix root cause.
+4. Verify status.
+5. Resume minting only after validation.

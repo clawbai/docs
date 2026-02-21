@@ -2,94 +2,78 @@
 title: Integrating /v1/check
 ---
 
-Your relying service calls Clawb **right before** executing a sensitive action.
+Your relying service should call `/v1/check` immediately before sensitive operations.
 
-`/v1/check` is intentionally **server-to-server** (not agent-signed): the relying service verifies the agent signature on the *original* inbound request, then asks Clawb what to do.
-
-<Info>
-  **Auth quick reference**
-
-  ```http
-  # Preferred
-  X-Clawb-Api-Key: ck_live_9f2b3c4d5e6f7a8b
-
-  # Alternative
-  Authorization: Bearer ck_live_9f2b3c4d5e6f7a8b
-  ```
-
-  Use provider keys with the `ck_live_` or `ck_test_` prefix.
-</Info>
-
-## Request
+## Auth
 
 ```http
-POST /v1/check
-Content-Type: application/json
-X-Clawb-Api-Key: ck_live_9f2b3c4d5e6f7a8b
-
-{
-  "agent_id": "agt_...",
-  "policy_id": "pol_default",
-
-  // required: what the agent is trying to do
-  "action": "refund",
-
-  // optional: action-specific payload
-  "context": {
-    "amount": 49.00,
-    "customer_id": "cus_123",
-    "reason": "late delivery"
-  }
-}
+X-Clawb-Api-Key: ck_live_...
 ```
 
-### Email constraint checks
-
-For `action: "send_email"`, include an `email` object so policy constraints can evaluate it:
+## Request
 
 ```json
 {
   "agent_id": "agt_...",
   "policy_id": "pol_default",
-  "action": "send_email",
-  "email": {
-    "to": ["a@example.com"],
-    "cc": [],
-    "bcc": [],
-    "subject": "Welcome",
-
-    // attachments are metadata-only for policy evaluation
-    "attachments": [
-      {"filename": "doc.pdf", "content_type": "application/pdf", "size_bytes": 12345}
-    ]
+  "action": "refund",
+  "context": {
+    "amount": 49.0,
+    "currency": "USD",
+    "reason": "late_delivery"
   }
 }
 ```
+
+For `action: "send_email"`, include `email` object fields so policy constraints can evaluate recipients and attachments.
 
 ## Response
 
 ```json
 {
-  "decision": "allow" | "challenge" | "deny",
-  "confidence": 0.0,
-  "reasons": ["..."],
-
-  // present when decision=="challenge"
-  "challenge": {"type": "attest" | "telemetry", "url": "...", "detail": "..."},
-
-  // present on some denies (example: rate limits)
-  "retry_after_seconds": 12
+  "decision": "allow",
+  "confidence": 0.9,
+  "reasons": ["agent_key_attested"]
 }
 ```
 
-## Provider API key (required)
+When challenged:
 
-`/v1/check` requires a provider API key.
-
-```http
-X-Clawb-Api-Key: ck_live_9f2b3c4d5e6f7a8b
+```json
+{
+  "decision": "challenge",
+  "challenge": {"type": "attest", "url": "..."}
+}
 ```
 
-This lets Clawb attribute usage, enforce rate limits/quotas, and scope checks to your workspace.
+## Python SDK example
 
-See: [Verification service](/verification/overview)
+```python
+from clawb_agent_sdk import ClawbClient, ApiProvider
+
+client = ClawbClient(base_url="https://api.clawb.ai/api")
+provider = ApiProvider(client=client, api_key="ck_live_...")
+
+decision = provider.check(
+    agent_id="agt_01...",
+    policy_id="pol_default",
+    action="refund",
+    context={"amount": 49.0, "currency": "USD"},
+)
+
+if decision["decision"] == "allow":
+    # Execute the business action.
+    pass
+elif decision["decision"] == "challenge":
+    # Route to approval workflow.
+    pass
+else:
+    # Deny safely.
+    pass
+```
+
+## Related docs
+
+- [Provider integration flow](/integration/provider-flow)
+- [Enterprise policy sync API](/api-reference/policies-sync)
+- [Identity credential APIs](/api-reference/identity-credentials)
