@@ -38,6 +38,7 @@
             "group": "Integration",
             "pages": [
               "integration/provider-flow",
+              "integration/end-to-end",
               "integration/check",
               "integration/email-sending",
               "integration/examples"

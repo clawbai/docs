@@ -1,0 +1,191 @@
+---
+title: End-to-end integration scenario
+description: Implement a complete refund request flow with registration, attestation, signature verification, policy checks, and decision handling.
+sidebarTitle: End-to-end flow
+---
+
+Use this page to implement one complete **refund request** path from inbound agent call to final provider decision.
+
+## Scenario overview
+
+You receive a signed request from an agent that wants to issue a refund.
+You need to verify the request, evaluate policy, and branch safely.
+
+## 1) Register and attest the agent
+
+Before request-time checks, make sure the agent is registered and attested.
+
+1. Register the agent identity and public key. See [Agents overview](/agents/overview).
+2. Complete key-ownership challenge signing. See [Attestation](/agents/attestation).
+
+Use the resulting `agent_id` in your request-time logic.
+
+## 2) Read signed headers and rebuild the canonical string
+
+Your provider endpoint receives these headers from the agent:
+
+- `X-Clawb-Agent-Id`
+- `X-Clawb-Timestamp` (milliseconds)
+- `X-Clawb-Nonce`
+- `X-Clawb-Signature` (base64 Ed25519 signature)
+
+Canonical format:
+
+```text
+METHOD\nPATH\nTIMESTAMP_MS\nNONCE\nSHA256(body)
+```
+
+Example for a refund call:
+
+```text
+POST
+/v1/refunds
+1739140000123
+2f8d8b19-5e0a-4f8b-b7d4-6dc15b1fe201
+3adfd3eb02f15d4f4b5a9f5b2d18f8d1b6d8a7eac03f4b7a56ec8f8c2f2ff321
+```
+
+## 3) Verify signature (local or `/v1/verify`)
+
+You can verify signatures locally for low latency.
+You can also call the verification service for centralized checks.
+See [Verification API](/verification/verify-api).
+
+```python provider_verify.py
+# Step 3: verify the inbound signature online with Clawb.
+# You can replace this with local Ed25519 verification if preferred.
+import requests
+
+clawb_api_key = "ck_live_9f2b3c4d5e6f7a8b"
+
+verify_payload = {
+    "agent_id": "agt_01jv2fsk4mv9mtr9j3m7h6qk6y",
+    "method": "POST",
+    "path": "/v1/refunds",
+    "timestamp_ms": 1739140000123,
+    "nonce": "2f8d8b19-5e0a-4f8b-b7d4-6dc15b1fe201",
+    "body_sha256": "3adfd3eb02f15d4f4b5a9f5b2d18f8d1b6d8a7eac03f4b7a56ec8f8c2f2ff321",
+    "signature_b64": "MIGX4kN4kQdVf8x4t3xT7z4qG9D0wZ6xv4q1iXW8eRj4Nf0j9hQeT7+0k8iQvN5oS7q8z4f5e6a1b2c3d4e5f6g==",
+}
+
+verify_resp = requests.post(
+    "https://api.clawb.ai/v1/verify",
+    headers={"X-Clawb-Api-Key": clawb_api_key, "Content-Type": "application/json"},
+    json=verify_payload,
+    timeout=10,
+)
+verify_resp.raise_for_status()
+verify_result = verify_resp.json()
+
+if not verify_result.get("valid"):
+    # Fail closed when signature verification fails.
+    raise ValueError("Invalid agent signature")
+```
+
+## 4) Call `/v1/check` with realistic refund payload
+
+After signature verification, call `/v1/check` for policy enforcement.
+
+```javascript refund-check.js
+// Step 4: request a policy decision for a refund action.
+import fetch from "node-fetch";
+
+const clawbApiKey = "ck_live_9f2b3c4d5e6f7a8b";
+
+const checkPayload = {
+  agent_id: "agt_01jv2fsk4mv9mtr9j3m7h6qk6y",
+  policy_id: "pol_refunds_v2",
+  action: "refund",
+  context: {
+    refund_id: "rf_2026_000184",
+    order_id: "ord_987654",
+    customer_id: "cus_784512",
+    currency: "USD",
+    amount: 249.0,
+    reason: "duplicate_charge",
+    requested_at: "2026-01-14T18:24:11Z",
+    payment_method: "card",
+    account_age_days: 640
+  }
+};
+
+const checkResp = await fetch("https://api.clawb.ai/v1/check", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "X-Clawb-Api-Key": clawbApiKey
+  },
+  body: JSON.stringify(checkPayload)
+});
+
+if (!checkResp.ok) {
+  // Treat transport and auth errors separately from policy decisions.
+  throw new Error(`Check request failed with ${checkResp.status}`);
+}
+
+const decision = await checkResp.json();
+console.log(decision);
+```
+
+## 5) Branch on `allow`, `challenge`, or `deny`
+
+Handle each decision deterministically.
+
+```javascript decision-branching.js
+// Step 5: branch behavior from /v1/check.
+function handleRefundDecision(decision, refundContext) {
+  if (decision.decision === "allow") {
+    // Execute refund immediately and record the policy decision ID.
+    return { status: "executed", refundId: refundContext.refund_id };
+  }
+
+  if (decision.decision === "challenge") {
+    // Pause execution and show challenge URL to an approver workflow.
+    return {
+      status: "pending_approval",
+      challengeType: decision.challenge?.type,
+      challengeUrl: decision.challenge?.url
+    };
+  }
+
+  if (decision.decision === "deny") {
+    // Block execution and return a clear reason to internal logs.
+    return {
+      status: "blocked",
+      reasons: decision.reasons ?? ["policy_denied"],
+      retryAfterSeconds: decision.retry_after_seconds ?? null
+    };
+  }
+
+  // Fail closed on unknown decision values.
+  throw new Error(`Unknown decision: ${decision.decision}`);
+}
+```
+
+## 6) Minimal error-handling checklist
+
+Use this checklist in your production handler:
+
+- Reject missing `X-Clawb-Agent-Id`, `X-Clawb-Timestamp`, `X-Clawb-Nonce`, or `X-Clawb-Signature`.
+- Enforce timestamp skew limits and nonce replay protection.
+- Fail closed if signature verification returns invalid.
+- Retry `/v1/check` only for transient failures (`429`, `5xx`) with backoff.
+- Do not retry `deny` decisions as transport errors.
+- Log `agent_id`, `action`, decision, and request correlation ID.
+- Keep user-visible errors generic while preserving detailed internal logs.
+
+## Troubleshooting quick checks
+
+If the flow fails, verify these items first:
+
+1. Timestamp is in **milliseconds**, not seconds.
+2. Canonical `PATH` matches request path exactly.
+3. Body hash uses raw bytes exactly as sent.
+4. Provider key uses the correct header (`X-Clawb-Api-Key`).
+5. `agent_id` is active and not revoked.
+6. Nonce is unique per request.
+
+## Next steps
+
+- Review [Provider integration flow](/integration/provider-flow) for architecture choices.
+- Review [Integrating /v1/check](/integration/check) for payload and response details.
