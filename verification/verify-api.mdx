@@ -11,17 +11,31 @@ Goal: help API providers answer “should I trust this agent request?”
 ## Auth
 Providers use a **provider API key**.
 
-Accepted headers:
+Preferred header:
 
 ```http
-X-Clawb-Api-Key: ck_live_...
+X-Clawb-Api-Key: ck_live_9f2b3c4d5e6f7a8b
 ```
 
-or:
+Accepted alternative:
 
 ```http
-Authorization: Bearer ck_live_...
+Authorization: Bearer ck_live_9f2b3c4d5e6f7a8b
 ```
+
+Use provider keys with the `ck_live_` or `ck_test_` prefix. Do not use `prv_` tokens for these endpoints.
+
+<Info>
+  **Auth quick reference**
+
+  ```http
+  # Preferred
+  X-Clawb-Api-Key: ck_live_9f2b3c4d5e6f7a8b
+
+  # Alternative
+  Authorization: Bearer ck_live_9f2b3c4d5e6f7a8b
+  ```
+</Info>
 
 ---
 
@@ -38,7 +52,7 @@ Request:
 ```http
 POST /v1/verify
 Content-Type: application/json
-X-Clawb-Api-Key: ck_live_...
+X-Clawb-Api-Key: ck_live_9f2b3c4d5e6f7a8b
 
 {
   "agent_id": "agt_...",
@@ -109,7 +123,7 @@ Providers can submit feedback to improve ecosystem safety.
 
 ```http
 POST /v1/reputation/feedback
-Authorization: Bearer prv_...
+X-Clawb-Api-Key: ck_live_9f2b3c4d5e6f7a8b
 Content-Type: application/json
 
 {

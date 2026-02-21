@@ -256,13 +256,27 @@ They typically:
 
 Both endpoints are designed for **server-to-server** usage and require a **provider API key**.
 
+<Info>
+  **Auth quick reference**
+
+  ```http
+  # Preferred
+  X-Clawb-Api-Key: ck_live_9f2b3c4d5e6f7a8b
+
+  # Alternative
+  Authorization: Bearer ck_live_9f2b3c4d5e6f7a8b
+  ```
+
+  Use provider keys with the `ck_live_` or `ck_test_` prefix.
+</Info>
+
 ### Setup
 
 ```python
 from clawb_agent_sdk import ClawbClient, ApiProvider
 
 base_url = "https://api.clawb.ai/api"
-provider_api_key = "ck_live_..."  # provider key issued in the dashboard
+provider_api_key = "ck_live_9f2b3c4d5e6f7a8b"  # provider key issued in the dashboard
 
 provider_client = ClawbClient(base_url=base_url)
 api = ApiProvider(client=provider_client, api_key=provider_api_key)
