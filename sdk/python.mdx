@@ -278,12 +278,14 @@ You must build the payload from the **original inbound request** that your API r
 
 Required fields:
 - `agent_id`: from `X-Clawb-Agent-Id`
-- `method`: HTTP method (e.g. `POST`)
+- `method`: uppercase HTTP method (e.g. `POST`)
 - `path`: URL path only (e.g. `/v1/refunds`)
-- `timestamp_ms`: from `X-Clawb-Timestamp`
+- `timestamp_ms`: unix epoch milliseconds from `X-Clawb-Timestamp`
 - `nonce`: from `X-Clawb-Nonce`
-- `body_sha256`: lowercase hex sha256 of the raw request body bytes
+- `body_sha256`: lowercase hex SHA-256 of the raw request body bytes
 - `signature_b64`: from `X-Clawb-Signature`
+
+Timestamp must be `milliseconds`; using `seconds` causes signature validation failure.
 
 Example:
 
