@@ -275,9 +275,11 @@ Once your agent is active, you’ll typically sign requests that matter (for exa
 
 ### Required headers
 - `X-Clawb-Agent-Id`: your `agent_id`
-- `X-Clawb-Timestamp`: unix epoch seconds (example: `1739140000`)
+- `X-Clawb-Timestamp`: unix epoch milliseconds (example: `1739140000000`)
 - `X-Clawb-Nonce`: random string (UUID is fine)
 - `X-Clawb-Signature`: base64 Ed25519 signature
+
+Timestamp must be `milliseconds`; using `seconds` causes signature validation failure.
 
 ### Canonical string (exact format)
 Build this string (newlines matter):
@@ -289,6 +291,7 @@ METHOD\nPATH\nTIMESTAMP\nNONCE\nSHA256(body)
 Where:
 - `METHOD` is uppercase (`POST`, `GET`, …)
 - `PATH` is only the path (example: `/v1/check`) — not the full URL
+- `TIMESTAMP` is unix epoch milliseconds from `X-Clawb-Timestamp`
 - `SHA256(body)` is lowercase hex of the SHA-256 of the raw request body bytes
 
 Then sign the **UTF-8 bytes** of that canonical string with Ed25519, and base64-encode the signature bytes into `X-Clawb-Signature`.

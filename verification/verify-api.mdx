@@ -51,6 +51,16 @@ X-Clawb-Api-Key: ck_live_...
 }
 ```
 
+Timestamp must be `milliseconds`; using `seconds` causes signature validation failure.
+
+Request field notes:
+- `method`: use uppercase HTTP method (`GET`, `POST`, and so on)
+- `path`: include only the path (`/v1/refunds`), not scheme, host, or query string
+- `timestamp_ms`: unix epoch milliseconds from `X-Clawb-Timestamp`
+- `nonce`: pass through the exact `X-Clawb-Nonce` value
+- `body_sha256`: lowercase hex SHA-256 of the exact raw request body bytes
+- `signature_b64`: pass through the exact `X-Clawb-Signature` value
+
 ### Response
 
 ```json
