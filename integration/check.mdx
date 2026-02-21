@@ -6,12 +6,26 @@ Your relying service calls Clawb **right before** executing a sensitive action.
 
 `/v1/check` is intentionally **server-to-server** (not agent-signed): the relying service verifies the agent signature on the *original* inbound request, then asks Clawb what to do.
 
+<Info>
+  **Auth quick reference**
+
+  ```http
+  # Preferred
+  X-Clawb-Api-Key: ck_live_9f2b3c4d5e6f7a8b
+
+  # Alternative
+  Authorization: Bearer ck_live_9f2b3c4d5e6f7a8b
+  ```
+
+  Use provider keys with the `ck_live_` or `ck_test_` prefix.
+</Info>
+
 ## Request
 
 ```http
 POST /v1/check
 Content-Type: application/json
-X-Clawb-Api-Key: ck_live_...
+X-Clawb-Api-Key: ck_live_9f2b3c4d5e6f7a8b
 
 {
   "agent_id": "agt_...",
@@ -73,7 +87,7 @@ For `action: "send_email"`, include an `email` object so policy constraints can 
 `/v1/check` requires a provider API key.
 
 ```http
-X-Clawb-Api-Key: ck_live_...
+X-Clawb-Api-Key: ck_live_9f2b3c4d5e6f7a8b
 ```
 
 This lets Clawb attribute usage, enforce rate limits/quotas, and scope checks to your workspace.

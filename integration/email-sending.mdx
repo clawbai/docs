@@ -8,10 +8,27 @@ Clawb can act as a **backend enforcement point** for email sending:
 2. If Clawb returns `allow`, your service calls `POST /v1/email/send` to send the email **server-side via SendGrid**
 3. If Clawb returns `deny` or `challenge`, your service must **not** send the email
 
+
+<Info>
+  **Auth quick reference**
+
+  ```http
+  # Preferred
+  X-Clawb-Api-Key: ck_live_9f2b3c4d5e6f7a8b
+
+  # Alternative
+  Authorization: Bearer ck_live_9f2b3c4d5e6f7a8b
+  ```
+
+  Use provider keys with the `ck_live_` or `ck_test_` prefix.
+</Info>
+
 ## Step 1 — Ask for a decision
 
-```json
+```http
 POST /v1/check
+Content-Type: application/json
+X-Clawb-Api-Key: ck_live_9f2b3c4d5e6f7a8b
 
 {
   "agent_id": "agt_...",
@@ -29,9 +46,10 @@ POST /v1/check
 
 `/v1/email/send` requires a provider API key header.
 
-```json
+```http
 POST /v1/email/send
-X-CLAWB-API-KEY: <provider-key>
+Content-Type: application/json
+X-Clawb-Api-Key: ck_live_9f2b3c4d5e6f7a8b
 
 {
   "agent_id": "agt_...",

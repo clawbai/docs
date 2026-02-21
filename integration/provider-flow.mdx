@@ -11,6 +11,20 @@ At a high level, you want to answer two questions for each inbound agent request
 
 Clawb supports two phases:
 
+<Info>
+  **Auth quick reference**
+
+  ```http
+  # Preferred
+  X-Clawb-Api-Key: ck_live_9f2b3c4d5e6f7a8b
+
+  # Alternative
+  Authorization: Bearer ck_live_9f2b3c4d5e6f7a8b
+  ```
+
+  Use provider keys with the `ck_live_` or `ck_test_` prefix.
+</Info>
+
 - **Onboarding (one-time per agent identity):** create/attest an agent identity (outside the provider request path)
 - **Request-time (every call):** Verify → Check
 
@@ -53,7 +67,7 @@ Call `POST /v1/check` with your provider API key:
 ```http
 POST /v1/check
 Content-Type: application/json
-X-Clawb-Api-Key: ck_live_...
+X-Clawb-Api-Key: ck_live_9f2b3c4d5e6f7a8b
 
 {
   "agent_id": "agt_...",
