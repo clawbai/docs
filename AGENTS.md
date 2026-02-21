@@ -37,6 +37,15 @@ Use Mintlify's built-in components for consistent formatting. See https://www.mi
 - Include introductory context before diving into steps or details
 - Add "Next steps" or related links where helpful
 
+## Documentation depth default
+
+- Write docs for junior developers by default
+- Prefer step-by-step explanations with clear prerequisites and expected outcomes
+- Include runnable code examples for each API/workflow section
+- Add brief inline code comments for non-obvious lines
+- Include at least one happy-path and one troubleshooting/failure example per major section
+- Use realistic values (avoid placeholder values like `foo` and `bar`)
+
 ## What to avoid
 
 - Don't edit `docs.json` without understanding the navigation structure
