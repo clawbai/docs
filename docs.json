@@ -50,6 +50,7 @@
             "pages": [
               "api-reference/introduction",
               "api-reference/public-metadata",
+              "api-reference/token-exchange",
               "api-reference/provider-agents",
               "api-reference/provider-audit",
               "api-reference/identity-credentials",

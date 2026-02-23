@@ -27,7 +27,7 @@ from clawb_agent_sdk import ClawbClient, ApiProvider
 BASE_URL = "https://api.clawb.ai/api"
 PROVIDER_API_KEY = "ck_live_replace_me"
 
-# Unsiged low-level client for provider server-to-server calls.
+# Unsigned low-level client for provider server-to-server calls.
 provider_client = ClawbClient(base_url=BASE_URL)
 
 # High-level provider helper.
@@ -196,6 +196,42 @@ print(cfg["issuer"])
 print("keys:", len(jwks.get("keys", [])))
 ```
 
+## Token exchange helpers (new)
+
+```python
+from clawb_agent_sdk import ClawbClient, ClawbIdentity, get_aws_credentials
+
+agent_client = ClawbClient(
+    base_url=BASE_URL,
+    agent_id="agt_01...",
+    private_key_b64=priv_b64,
+)
+
+# Sign request material with local private key.
+sig = ClawbIdentity(private_key_b64=priv_b64).sign_request(
+    method="POST",
+    path="/v1/token/exchange",
+    timestamp_ms=1740137855000,
+    nonce="n_123",
+    body_sha256="3adfd3eb02f15d4f4b5a9f5b2d18f8d1b6d8a7eac03f4b7a56ec8f8c2f2ff321",
+)
+
+# Exchange for a short-lived OIDC JWT (with local cache).
+token = agent_client.get_token(
+    audience="aws",
+    policy_id="pol_default",
+    scopes=["s3:GetObject"],
+)
+
+# Optional cloud helper for AWS STS.
+creds = get_aws_credentials(
+    token=token["token"],
+    role_arn="arn:aws:iam::123456789012:role/ClawbRole",
+    role_session_name="clawb-agent-session",
+)
+print(creds["AccessKeyId"])
+```
+
 ## Common mistakes
 
 1. Use milliseconds for timestamps, not seconds.
@@ -208,5 +244,6 @@ print("keys:", len(jwks.get("keys", [])))
 
 - [Provider control plane tutorial](/integration/provider-control-plane-tutorial)
 - [Identity credential APIs](/api-reference/identity-credentials)
+- [Token exchange API](/api-reference/token-exchange)
 - [Provider audit APIs](/api-reference/provider-audit)
 - [Public metadata endpoints](/api-reference/public-metadata)
