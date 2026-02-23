@@ -7,6 +7,12 @@ Use this endpoint to treat policy configuration as code.
 
 ## POST `/v1/policies/sync`
 
+Canonical policy sync endpoint.
+
+## POST `/v1/sync`
+
+Alias endpoint with the same behavior and response contract as `/v1/policies/sync`.
+
 ### Auth
 
 Dashboard user session auth (not provider API key).
@@ -76,3 +82,7 @@ curl -sS -X POST https://api.clawb.ai/api/v1/policies/sync \
 2. Validate `diff` output.
 3. Apply with `dry_run=false` and idempotency key.
 4. Fail the pipeline on `sync_conflict` and rebase policy source.
+
+## What gets synchronized
+
+In addition to policy upserts, the sync process materializes group-to-policy bindings and group memberships from the submitted spec.

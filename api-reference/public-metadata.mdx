@@ -24,16 +24,16 @@ curl -sS https://api.clawb.ai/api/.well-known/openid-configuration
 ```json
 {
   "issuer": "https://api.clawb.ai/api",
-  "jwks_uri": "https://api.clawb.ai/api/.well-known/clawb/jwks.json",
+  "jwks_uri": "https://api.clawb.ai/api/.well-known/jwks.json",
   "id_token_signing_alg_values_supported": ["EdDSA"],
   "subject_types_supported": ["public"],
   "response_types_supported": ["token"]
 }
 ```
 
-## GET `/.well-known/clawb/jwks.json`
+## GET `/.well-known/jwks.json`
 
-Returns active and previous issuer public keys in JWK format.
+Canonical JWKS endpoint that returns active and previous issuer public keys in JWK format.
 
 ### Auth
 
@@ -42,7 +42,7 @@ No auth required.
 ### Curl example
 
 ```bash
-curl -sS https://api.clawb.ai/api/.well-known/clawb/jwks.json
+curl -sS https://api.clawb.ai/api/.well-known/jwks.json
 ```
 
 ### Example response
@@ -61,6 +61,10 @@ curl -sS https://api.clawb.ai/api/.well-known/clawb/jwks.json
   ]
 }
 ```
+
+## GET `/.well-known/clawb/jwks.json`
+
+Back-compat alias for older integrations. Returns the same payload as `/.well-known/jwks.json`.
 
 ## Python SDK example
 
