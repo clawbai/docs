@@ -5,7 +5,7 @@ title: Python SDK
 This page is a step-by-step guide for both sides of a Clawb integration:
 
 - Agent runtime (signed requests)
-- Provider backend (provider API key control plane)
+- Workspace backend (workspace API key control plane)
 
 It maps the core control-plane workflow: identity, verification/decisioning, bounded credentials, and audit-ready operations.
 
@@ -24,16 +24,16 @@ pip install clawb-agent-sdk
 ## Quick setup
 
 ```python
-from clawb_agent_sdk import ClawbClient, ApiProvider
+from clawb_agent_sdk import ClawbClient, WorkspaceControlPlane
 
 BASE_URL = "https://api.clawb.ai/api"
-PROVIDER_API_KEY = "ck_live_replace_me"
+WORKSPACE_API_KEY = "ck_live_replace_me"
 
-# Unsigned low-level client for provider server-to-server calls.
-provider_client = ClawbClient(base_url=BASE_URL)
+# Unsigned low-level client for workspace server-to-server calls.
+control_plane_client = ClawbClient(base_url=BASE_URL)
 
-# High-level provider helper.
-provider = ApiProvider(client=provider_client, api_key=PROVIDER_API_KEY)
+# High-level workspace helper.
+control_plane = WorkspaceControlPlane(client=control_plane_client, api_key=WORKSPACE_API_KEY)
 ```
 
 ## Agent onboarding and signed runtime
@@ -75,19 +75,19 @@ agent_client.post(
 )
 ```
 
-## Provider request-time flow
+## Workspace request-time flow
 
 ### Verify signature (optional online mode)
 
 ```python
 # Build verify payload from the original inbound request values.
-verify = provider.verify(
+verify = control_plane.verify(
     agent_id="agt_01...",
     method="POST",
     path="/v1/refunds",
     timestamp_ms=1740137855000,
     nonce="2f8d8b19-5e0a-4f8b-b7d4-6dc15b1fe201",
-    body_sha256=provider.sha256_hex(b'{"amount":49.00}'),
+    body_sha256=control_plane.sha256_hex(b'{"amount":49.00}'),
     signature_b64="<x-clawb-signature-header>",
 )
 print(verify)
@@ -113,7 +113,7 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/verify" \
 ### Enforce policy decision
 
 ```python
-decision = provider.check(
+decision = control_plane.check(
     agent_id="agt_01...",
     policy_id="pol_default",
     action="refund",
@@ -122,12 +122,12 @@ decision = provider.check(
 print(decision)
 ```
 
-## Provider control-plane APIs (new)
+## Workspace control-plane APIs (new)
 
-### Provider agent inventory
+### Workspace agent inventory
 
 ```python
-provider.provider_agents_upsert(
+control_plane.workspace_agents_upsert(
     external_agent_key="github:app:payments-bot",
     agent_id="agt_01...",
     display_name="Payments bot",
@@ -137,14 +137,14 @@ provider.provider_agents_upsert(
     status="active",
 )
 
-inventory = provider.provider_agents_list(environment="prod", label="payments")
+inventory = control_plane.workspace_agents_list(environment="prod", label="payments")
 print(inventory.get("count"))
 ```
 
-### Provider audit
+### Workspace audit
 
 ```python
-events = provider.provider_audit_events(
+events = control_plane.workspace_audit_events(
     start_ms=1740137000000,
     end_ms=1740139999000,
     decision="deny",
@@ -152,7 +152,7 @@ events = provider.provider_audit_events(
 )
 print(events.get("next_cursor"))
 
-csv_export = provider.provider_audit_export(
+csv_export = control_plane.workspace_audit_export(
     format="csv",
     filters={"decision": "deny"},
     limit=500,
@@ -163,7 +163,7 @@ print(len(csv_export.get("csv", "")))
 ### Identity credential mint and revoke
 
 ```python
-mint = provider.identity_credentials_mint(
+mint = control_plane.identity_credentials_mint(
     agent_id="agt_01...",
     provider="sendgrid",
     audience="clawb.provider",
@@ -174,13 +174,13 @@ mint = provider.identity_credentials_mint(
 )
 
 # Revoke one credential by token.
-provider.identity_credentials_revoke(
+control_plane.identity_credentials_revoke(
     token=mint["credential"]["token"],
     reason="cleanup",
 )
 
 # Revoke all active credentials for one agent.
-provider.identity_credentials_revoke_by_agent(
+control_plane.identity_credentials_revoke_by_agent(
     agent_id="agt_01...",
     reason="agent reset",
 )
@@ -189,16 +189,16 @@ provider.identity_credentials_revoke_by_agent(
 ### Kill switch
 
 ```python
-provider.identity_kill_switch_minting(paused=True, reason="incident INC-7")
-provider.identity_kill_switch_revoke_all(reason="credential compromise")
-print(provider.identity_kill_switch_status())
+control_plane.identity_kill_switch_minting(paused=True, reason="incident INC-7")
+control_plane.identity_kill_switch_revoke_all(reason="credential compromise")
+print(control_plane.identity_kill_switch_status())
 ```
 
 ### Reputation feedback (HMAC-signed)
 
 ```python
 # SDK automatically computes feedback signature headers.
-provider.reputation_feedback(
+control_plane.reputation_feedback(
     agent_id="agt_01...",
     verdict="bad",
     evidence={"reason": "credential_stuffing_pattern"},
@@ -208,8 +208,8 @@ provider.reputation_feedback(
 ## Public metadata helpers (new)
 
 ```python
-cfg = provider_client.well_known_openid_configuration()
-jwks = provider_client.well_known_jwks()
+cfg = control_plane_client.well_known_openid_configuration()
+jwks = control_plane_client.well_known_jwks()
 
 print(cfg["issuer"])
 print("keys:", len(jwks.get("keys", [])))
@@ -271,14 +271,14 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/token/exchange" \
 
 1. Use milliseconds for timestamps, not seconds.
 2. Keep base URL at API root (`.../api`).
-3. Use provider API key for `/v1/check` and provider control-plane endpoints.
-4. Do not manually sign reputation feedback if you can use `provider.reputation_feedback()`.
+3. Use workspace API key for `/v1/check` and workspace control-plane endpoints.
+4. Do not manually sign reputation feedback if you can use `control_plane.reputation_feedback()`.
 5. Handle policy-denied mint responses (`403`) separately from transport failures.
 
 ## Related pages
 
-- [Provider control plane tutorial](/integration/provider-control-plane-tutorial)
+- [Workspace control plane tutorial](/integration/provider-control-plane-tutorial)
 - [Identity credential APIs](/api-reference/identity-credentials)
 - [Token exchange API](/api-reference/token-exchange)
-- [Provider audit APIs](/api-reference/provider-audit)
+- [Workspace audit APIs](/api-reference/provider-audit)
 - [Public metadata endpoints](/api-reference/public-metadata)

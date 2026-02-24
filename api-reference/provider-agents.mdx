@@ -1,17 +1,17 @@
 ---
-title: Provider agent mapping APIs
-description: Map provider-side agent identifiers to Clawb agent IDs and query inventory metadata.
+title: Workspace agent mapping APIs
+description: Map workspace-side agent identifiers to Clawb agent IDs and query inventory metadata.
 ---
 
-Use these APIs to maintain durable provider inventory metadata.
+Use these APIs to maintain durable workspace inventory metadata.
 
-## POST `/v1/provider/agents/upsert`
+## POST `/v1/workspace/agents/upsert`
 
-Idempotently maps a provider-side key to a Clawb `agent_id` inside the provider workspace.
+Idempotently maps a workspace-side key to a Clawb `agent_id` inside the workspace.
 
 ### Auth
 
-Provider API key required.
+Workspace API key required.
 
 ```http
 X-Clawb-Api-Key: ck_live_...
@@ -34,13 +34,13 @@ X-Clawb-Api-Key: ck_live_...
 ### Python SDK example
 
 ```python
-from clawb_agent_sdk import ClawbClient, ApiProvider
+from clawb_agent_sdk import ClawbClient, WorkspaceControlPlane
 
 client = ClawbClient(base_url="https://api.clawb.ai/api")
-provider = ApiProvider(client=client, api_key="ck_live_...")
+control_plane = WorkspaceControlPlane(client=client, api_key="ck_live_...")
 
 # Upsert is safe to call repeatedly with the same mapping.
-resp = provider.provider_agents_upsert(
+resp = control_plane.workspace_agents_upsert(
     external_agent_key="github:app:123",
     agent_id="agt_01jv2fsk4mv9mtr9j3m7h6qk6y",
     display_name="Payments assistant",
@@ -59,9 +59,9 @@ print(resp)
 - `404 {"error":"unknown_agent"}`
 - `409 {"error":"conflict"}` when key is already mapped to a different agent
 
-## GET `/v1/provider/agents`
+## GET `/v1/workspace/agents`
 
-Lists mappings in the provider workspace.
+Lists mappings in the workspace.
 
 ### Query params
 
@@ -72,7 +72,7 @@ Lists mappings in the provider workspace.
 ### Curl example
 
 ```bash
-curl -sS "https://api.clawb.ai/api/v1/provider/agents?environment=prod&label=payments" \
+curl -sS "https://api.clawb.ai/api/v1/workspace/agents?environment=prod&label=payments" \
   -H "X-Clawb-Api-Key: ck_live_..."
 ```
 
@@ -80,7 +80,7 @@ curl -sS "https://api.clawb.ai/api/v1/provider/agents?environment=prod&label=pay
 
 ```python
 # Filter by environment + label.
-out = provider.provider_agents_list(environment="prod", label="payments")
+out = control_plane.workspace_agents_list(environment="prod", label="payments")
 print("count:", out.get("count"))
 for mapping in out.get("mappings", []):
     print(mapping["external_agent_key"], "->", mapping["agent_id"])

@@ -1,8 +1,8 @@
 ---
-title: Provider integration flow (Verify → Check)
+title: Workspace integration flow (Verify → Check)
 ---
 
-This page is for API providers and relying services.
+This page is for enterprise backend teams and relying services.
 
 It describes the request-time and control-plane integration paths in Clawb’s agent control plane.
 
@@ -67,15 +67,15 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/check" \
 
 ## Control-plane flow (new)
 
-In addition to request-time verify/check, providers now run a control plane.
+In addition to request-time verify/check, enterprise teams now run a workspace control plane.
 
 ### Agent inventory mapping
 
-- `POST /v1/provider/agents/upsert`
-- `GET /v1/provider/agents`
+- `POST /v1/workspace/agents/upsert`
+- `GET /v1/workspace/agents`
 
 ```bash
-curl -sS -X POST "https://api.clawb.ai/api/v1/provider/agents/upsert" \
+curl -sS -X POST "https://api.clawb.ai/api/v1/workspace/agents/upsert" \
   -H "Content-Type: application/json" \
   -H "X-Clawb-Api-Key: ck_live_replace_me" \
   -d '{
@@ -90,11 +90,11 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/provider/agents/upsert" \
 
 ### Audit query and export
 
-- `GET /v1/provider/audit/events`
-- `POST /v1/provider/audit/export`
+- `GET /v1/workspace/audit/events`
+- `POST /v1/workspace/audit/export`
 
 ```bash
-curl -sS "https://api.clawb.ai/api/v1/provider/audit/events?limit=20" \
+curl -sS "https://api.clawb.ai/api/v1/workspace/audit/events?limit=20" \
   -H "X-Clawb-Api-Key: ck_live_replace_me"
 ```
 
@@ -147,30 +147,30 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/reputation/feedback" \
 
 1. Edge layer verifies inbound agent signatures.
 2. Decision layer calls `/v1/check`.
-3. Control-plane jobs sync provider inventory and export audits.
+3. Control-plane jobs sync workspace inventory and export audits.
 4. Sensitive follow-on actions use short-lived minted credentials.
 5. Security operations can pause minting and revoke all credentials quickly.
 
 ## Python SDK starter
 
 ```python
-from clawb_agent_sdk import ClawbClient, ApiProvider
+from clawb_agent_sdk import ClawbClient, WorkspaceControlPlane
 
 client = ClawbClient(base_url="https://api.clawb.ai/api")
-provider = ApiProvider(client=client, api_key="ck_live_...")
+control_plane = WorkspaceControlPlane(client=client, api_key="ck_live_...")
 
 # request-time
-provider.verify(...)
-provider.check(...)
+control_plane.verify(...)
+control_plane.check(...)
 
 # control-plane
-provider.provider_agents_upsert(...)
-provider.provider_audit_events(limit=50)
-provider.identity_credentials_mint(agent_id="agt_01...", ttl_seconds=300)
+control_plane.workspace_agents_upsert(...)
+control_plane.workspace_audit_events(limit=50)
+control_plane.identity_credentials_mint(agent_id="agt_01...", ttl_seconds=300)
 ```
 
 ## Next steps
 
-- [Provider control plane tutorial](/integration/provider-control-plane-tutorial)
+- [Workspace control plane tutorial](/integration/provider-control-plane-tutorial)
 - [Provider audit APIs](/api-reference/provider-audit)
 - [Identity credential APIs](/api-reference/identity-credentials)

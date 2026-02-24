@@ -1,6 +1,6 @@
 ---
 title: API reference
-description: Reference for Clawb public metadata, provider APIs, identity credential APIs, telemetry, and policy sync.
+description: Reference for Clawb public metadata, workspace APIs, identity credential APIs, telemetry, and policy sync.
 ---
 
 Use this section when you need exact endpoint contracts.
@@ -22,12 +22,12 @@ All examples in this section assume that base URL.
 Clawb has three auth modes.
 
 1. `Agent-signed requests` for agent-runtime endpoints.
-2. `Provider API key` for provider control-plane and decision endpoints.
+2. `Workspace API key` for workspace control-plane and decision endpoints.
 3. `Dashboard session auth` for dashboard-only APIs.
 
-Most pages in this API reference focus on provider APIs.
+Most pages in this API reference focus on workspace APIs.
 
-Provider API key headers:
+Workspace API key headers:
 
 ```http
 # Preferred
@@ -56,13 +56,13 @@ Some endpoints also return additional fields such as `retry_after`, `max_ttl_sec
 - [OpenID configuration and JWKS](/api-reference/public-metadata)
 - [Token exchange endpoint](/api-reference/token-exchange)
 
-### Provider agent inventory
+### Workspace agent inventory
 
-- [Provider agent mapping APIs](/api-reference/provider-agents)
+- [Workspace agent mapping APIs](/api-reference/provider-agents)
 
-### Provider audit
+### Workspace audit
 
-- [Provider audit query and export APIs](/api-reference/provider-audit)
+- [Workspace audit query and export APIs](/api-reference/provider-audit)
 
 ### Identity credentials
 
@@ -71,7 +71,7 @@ Some endpoints also return additional fields such as `retry_after`, `max_ttl_sec
 
 ### Reputation and telemetry
 
-- [Provider reputation feedback API](/api-reference/reputation-feedback)
+- [Workspace reputation feedback API](/api-reference/reputation-feedback)
 - [Telemetry heartbeat APIs](/api-reference/telemetry)
 
 ### Policy operations

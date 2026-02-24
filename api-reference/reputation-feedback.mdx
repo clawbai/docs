@@ -38,10 +38,10 @@ Signature message format:
 ### Python SDK example (recommended)
 
 ```python
-from clawb_agent_sdk import ClawbClient, ApiProvider
+from clawb_agent_sdk import ClawbClient, WorkspaceControlPlane
 
 client = ClawbClient(base_url="https://api.clawb.ai/api")
-provider = ApiProvider(client=client, api_key="ck_live_...")
+provider = WorkspaceControlPlane(client=client, api_key="ck_live_...")
 
 # The SDK automatically builds feedback signature headers.
 out = provider.reputation_feedback(

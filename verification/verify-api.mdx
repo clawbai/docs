@@ -93,10 +93,10 @@ Provider feedback with required HMAC signature headers.
 ### SDK example (recommended)
 
 ```python
-from clawb_agent_sdk import ClawbClient, ApiProvider
+from clawb_agent_sdk import ClawbClient, WorkspaceControlPlane
 
 client = ClawbClient(base_url="https://api.clawb.ai/api")
-provider = ApiProvider(client=client, api_key="ck_live_...")
+provider = WorkspaceControlPlane(client=client, api_key="ck_live_...")
 
 # SDK computes timestamp/nonce/signature headers automatically.
 provider.reputation_feedback(
@@ -133,5 +133,5 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/reputation/feedback" \
 
 ## Related docs
 
-- [Provider integration flow](/integration/provider-flow)
+- [Workspace integration flow](/integration/provider-flow)
 - [Provider reputation feedback API](/api-reference/reputation-feedback)

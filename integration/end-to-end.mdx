@@ -41,13 +41,13 @@ These values are the source of truth for verification.
 Use local verification or online `/v1/verify`:
 
 ```python
-verify_result = provider.verify(
+verify_result = control_plane.verify(
     agent_id=agent_id,
     method="POST",
     path="/v1/refunds",
     timestamp_ms=timestamp_ms,
     nonce=nonce,
-    body_sha256=provider.sha256_hex(raw_body),
+    body_sha256=control_plane.sha256_hex(raw_body),
     signature_b64=signature_b64,
 )
 
@@ -62,7 +62,7 @@ if not verify_result.get("valid"):
 Python SDK:
 
 ```python
-decision = provider.check(
+decision = control_plane.check(
     agent_id=agent_id,
     policy_id="pol_refunds_v2",
     action="refund",
@@ -98,7 +98,7 @@ Use this when the follow-on provider call should be explicitly time/scoped.
 Python SDK:
 
 ```python
-mint = provider.identity_credentials_mint(
+mint = control_plane.identity_credentials_mint(
     agent_id=agent_id,
     provider="payments",
     audience="clawb.provider",
@@ -140,11 +140,11 @@ At execution time, record:
 Query recent events:
 
 ```python
-audit = provider.provider_audit_events(agent_id=agent_id, limit=20)
+audit = control_plane.workspace_audit_events(agent_id=agent_id, limit=20)
 ```
 
 ```bash
-curl -sS "https://api.clawb.ai/api/v1/provider/audit/events?agent_id=agt_replace_me&limit=20" \
+curl -sS "https://api.clawb.ai/api/v1/workspace/audit/events?agent_id=agt_replace_me&limit=20" \
   -H "X-Clawb-Api-Key: ck_live_replace_me"
 ```
 
@@ -155,8 +155,8 @@ curl -sS "https://api.clawb.ai/api/v1/provider/audit/events?agent_id=agt_replace
 If compromise is suspected, pause minting and revoke active credentials:
 
 ```python
-provider.identity_kill_switch_minting(paused=True, reason="incident INC-404")
-provider.identity_kill_switch_revoke_all(reason="incident INC-404")
+control_plane.identity_kill_switch_minting(paused=True, reason="incident INC-404")
+control_plane.identity_kill_switch_revoke_all(reason="incident INC-404")
 ```
 
 ```bash
@@ -221,7 +221,7 @@ except TimeoutError:
 
 ## Related docs
 
-- [Provider integration flow](/integration/provider-flow)
+- [Workspace integration flow](/integration/provider-flow)
 - [Integrating `/v1/check`](/integration/check)
 - [Identity credential APIs](/api-reference/identity-credentials)
 - [Identity kill switch APIs](/api-reference/identity-kill-switch)
