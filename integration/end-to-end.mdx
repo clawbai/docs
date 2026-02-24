@@ -4,20 +4,41 @@ description: Complete provider flow from signed inbound request to decision, sho
 sidebarTitle: End-to-end flow
 ---
 
-This scenario shows a complete refund flow.
+This scenario shows a complete refund flow through the agent control plane.
 
-## 1) Receive inbound signed request
+## Scenario and trust boundaries
 
-Extract:
+Action: `refund` on `POST /v1/refunds`
 
+Systems in path:
+1. Agent runtime (signs request)
+2. Your relying service (verifies + enforces)
+3. Clawb control plane (`/v1/verify`, `/v1/check`, control-plane APIs)
+4. External payments provider
+
+Required inbound headers:
 - `X-Clawb-Agent-Id`
 - `X-Clawb-Timestamp` (milliseconds)
 - `X-Clawb-Nonce`
 - `X-Clawb-Signature`
 
+---
+
+## 1) Receive inbound signed request
+
+Extract raw request fields without mutation:
+- method
+- exact path
+- raw body bytes
+- signature headers
+
+These values are the source of truth for verification.
+
+---
+
 ## 2) Verify identity
 
-Use local verification or online `/v1/verify`.
+Use local verification or online `/v1/verify`:
 
 ```python
 verify_result = provider.verify(
@@ -29,11 +50,16 @@ verify_result = provider.verify(
     body_sha256=provider.sha256_hex(raw_body),
     signature_b64=signature_b64,
 )
+
 if not verify_result.get("valid"):
     raise ValueError("invalid signature")
 ```
 
+---
+
 ## 3) Request policy decision
+
+Python SDK:
 
 ```python
 decision = provider.check(
@@ -44,13 +70,32 @@ decision = provider.check(
 )
 ```
 
-Branch on decision:
+curl:
 
+```bash
+curl -sS -X POST "https://api.clawb.ai/api/v1/check" \
+  -H "Content-Type: application/json" \
+  -H "X-Clawb-Api-Key: ck_live_replace_me" \
+  -d '{
+    "agent_id": "agt_replace_me",
+    "policy_id": "pol_refunds_v2",
+    "action": "refund",
+    "context": {"amount": 249.00, "currency": "USD", "reason": "duplicate_charge"}
+  }'
+```
+
+Decision branches:
 - `allow`: continue
 - `challenge`: pause and route to approval
 - `deny`: block
 
-## 4) Optional: mint short-lived credential for follow-on API call
+---
+
+## 4) Optional: mint short-lived credential for bounded execution
+
+Use this when the follow-on provider call should be explicitly time/scoped.
+
+Python SDK:
 
 ```python
 mint = provider.identity_credentials_mint(
@@ -63,34 +108,121 @@ mint = provider.identity_credentials_mint(
 )
 ```
 
-Use the returned token only for the bounded operation.
+curl:
 
-## 5) Record and query audit
+```bash
+curl -sS -X POST "https://api.clawb.ai/api/v1/identity/credentials/mint" \
+  -H "Content-Type: application/json" \
+  -H "X-Clawb-Api-Key: ck_live_replace_me" \
+  -d '{
+    "agent_id": "agt_replace_me",
+    "provider": "payments",
+    "audience": "clawb.provider",
+    "ttl_seconds": 120,
+    "one_time": true,
+    "scopes": ["refund:execute"]
+  }'
+```
+
+Use the returned credential only for the bounded operation.
+
+---
+
+## 5) Execute and record audit context
+
+At execution time, record:
+- `agent_id`
+- `policy_id`
+- `decision`
+- `trace_id` (if present)
+- downstream provider response status
+
+Query recent events:
 
 ```python
-# Later, operations can query recent denies/challenges.
 audit = provider.provider_audit_events(agent_id=agent_id, limit=20)
 ```
 
-## 6) Emergency branch
+```bash
+curl -sS "https://api.clawb.ai/api/v1/provider/audit/events?agent_id=agt_replace_me&limit=20" \
+  -H "X-Clawb-Api-Key: ck_live_replace_me"
+```
 
-If compromise is suspected:
+---
+
+## 6) Emergency mode (incident branch)
+
+If compromise is suspected, pause minting and revoke active credentials:
 
 ```python
 provider.identity_kill_switch_minting(paused=True, reason="incident INC-404")
 provider.identity_kill_switch_revoke_all(reason="incident INC-404")
 ```
 
-## Troubleshooting quick checks
+```bash
+curl -sS -X POST "https://api.clawb.ai/api/v1/identity/kill-switch/minting" \
+  -H "Content-Type: application/json" \
+  -H "X-Clawb-Api-Key: ck_live_replace_me" \
+  -d '{"paused": true, "reason": "incident INC-404"}'
 
-1. Timestamp must be milliseconds.
-2. `path` must match exactly.
-3. Request body hash must use exact raw bytes.
-4. Provider key must match workspace where `agent_id` lives.
-5. Handle `403` policy errors separately from network failures.
+curl -sS -X POST "https://api.clawb.ai/api/v1/identity/kill-switch/revoke-all" \
+  -H "Content-Type: application/json" \
+  -H "X-Clawb-Api-Key: ck_live_replace_me" \
+  -d '{"reason": "incident INC-404"}'
+```
+
+---
+
+## Unified branch pseudocode
+
+```python
+if not verify_result.get("valid"):
+    return {"status": 401, "error": "invalid_signature"}
+
+decision_value = (decision.get("decision") or "").lower()
+if decision_value == "deny":
+    return {"status": 403, "error": "policy_denied", "trace_id": decision.get("trace_id")}
+if decision_value == "challenge":
+    return {"status": 403, "error": "challenge_required", "challenge": decision.get("challenge")}
+
+# allow branch
+try:
+    # optional: mint bounded credential
+    # execute downstream provider action
+    return {"status": 200, "ok": True}
+except TimeoutError:
+    # transport issue, not policy issue
+    return {"status": 502, "error": "provider_unavailable"}
+```
+
+---
+
+## Error matrix
+
+| Symptom | Likely cause | Required action |
+| --- | --- | --- |
+| `invalid signature` / verify fails | method/path/body/timestamp mismatch | Recompute canonical inputs from raw request bytes and exact path. |
+| `timestamp_out_of_range` | seconds vs milliseconds or clock skew | Send ms timestamps and sync server clocks. |
+| `policy_denied` | policy explicitly blocks action | Stop execution and return safe deny response. |
+| `policy_challenge` | step-up condition matched | Trigger approval workflow and retry only after completion. |
+| `429` / quota errors | rate/usage limits exceeded | Backoff + retry for safe/idempotent flows only. |
+| `kill switch paused` | incident control active | Do not mint new credentials until incident cleared. |
+
+---
+
+## Verification checklist
+
+- Verify uses exact path and raw body hash.
+- `/v1/check` is called immediately before action execution.
+- `allow`, `challenge`, and `deny` branches are all tested.
+- Credential mint TTL/one-time behavior tested.
+- Audit query returns expected events.
+- Incident kill switch path tested in staging.
 
 ## Related docs
 
 - [Provider integration flow](/integration/provider-flow)
+- [Integrating `/v1/check`](/integration/check)
 - [Identity credential APIs](/api-reference/identity-credentials)
 - [Identity kill switch APIs](/api-reference/identity-kill-switch)
+- [Provider audit APIs](/api-reference/provider-audit)

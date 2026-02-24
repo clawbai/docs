@@ -10,6 +10,33 @@ When an agent asks your system to do something sensitive (refund money, deploy t
 - **challenge** → require extra proof (human approval, 2FA, business-hours rule, telemetry threshold, etc.)
 - **deny** → block
 
+## What Clawb controls at runtime
+
+- **Identity verification**: verify signed agent requests (`/v1/verify`).
+- **Policy decisioning**: evaluate action context and return `allow | challenge | deny` (`/v1/check`).
+- **Bounded credentials**: mint short-lived credentials for follow-on provider calls.
+- **Audit + incident response**: query/export evidence and use kill switch controls during incidents.
+
+## 60-second integration path
+
+1. Create and attest an agent passport (`agent_id` + key).
+2. Verify inbound signed requests in your relying service.
+3. Call `/v1/check` immediately before sensitive actions.
+4. Enforce `allow | challenge | deny` in code.
+5. Capture trace/audit signals and wire incident controls.
+
+## Decision semantics
+
+| Decision | What your service should do |
+| --- | --- |
+| `allow` | Execute the action (and enforce any returned constraints). |
+| `challenge` | Pause execution and route to an approval/step-up workflow. |
+| `deny` | Block execution and return a safe error response. |
+
+### Who this is for
+
+Backend integrators, API providers, and platform/security teams shipping agent-powered production systems.
+
 ## Start here
 
 - [Quickstart](/quickstart)
@@ -19,3 +46,4 @@ When an agent asks your system to do something sensitive (refund money, deploy t
 - [Build your integration (`/v1/check`)](/integration/check)
 - [Python SDK](/sdk/python)
 - [Operate in production](/verification/overview)
+- [API reference](/api-reference/introduction)

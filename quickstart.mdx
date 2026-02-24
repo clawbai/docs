@@ -13,51 +13,166 @@ Clawb returns a decision:
 
 ---
 
-## Minimal flow (step-by-step)
+## Prerequisites
 
-### 1) Create an agent identity
+You should have:
+- Base URL: `https://api.clawb.ai/api`
+- Provider API key: `ck_live_...`
+- Agent identity material (`agent_id`, keypair, attested status)
+- A relying service endpoint where agent requests arrive
+- Stable server clock (timestamps must be milliseconds)
+
+---
+
+## Fast path architecture (single request)
+
+1. Agent sends a signed request to your backend.
+2. Your backend verifies identity (`/v1/verify` or local signature verification).
+3. Your backend requests a policy decision (`/v1/check`).
+4. Your backend enforces `allow | challenge | deny`.
+5. Your backend logs `trace_id` and decision metadata.
+
+---
+
+## Step-by-step implementation
+
+### 1) Create and attest an agent identity
+
 An **agent** is an identity with an `agent_id` and one or more keys.
+Register and attest once, then reuse the identity.
 
-You will:
-1) generate a keypair (public + private)
-2) register the public key with Clawb
-3) attest (prove you control the private key)
+See [Attestation](/agents/attestation) for full language-specific examples.
 
-See [Attestation](/agents/attestation).
+---
 
-### 2) Your agent calls your service (signed)
-When an agent requests something sensitive, it should sign the request.
+### 2) Verify inbound request identity
 
-Your service verifies the signature before doing anything.
+You can:
+- verify signatures locally (recommended for low latency), or
+- call online verification via `/v1/verify`.
 
-### 3) Your service asks Clawb for a decision
-Example request to Clawb:
+Python SDK example:
+
+```python
+verify = provider.verify(
+    agent_id=agent_id,
+    method="POST",
+    path="/v1/refunds",
+    timestamp_ms=timestamp_ms,
+    nonce=nonce,
+    body_sha256=provider.sha256_hex(raw_body),
+    signature_b64=signature_b64,
+)
+
+if not verify.get("valid"):
+    raise ValueError("invalid signature")
+```
+
+Reference: [Provider integration flow](/integration/provider-flow)
+
+---
+
+### 3) Request a policy decision
+
+Raw HTTP:
 
 ```http
 POST /v1/check
 Content-Type: application/json
+X-Clawb-Api-Key: ck_live_...
 
 {
   "agent_id": "agt_...",
   "policy_id": "pol_default",
   "action": "refund",
-  "context": { "amount": 49.00 }
+  "context": {
+    "amount": 49.0,
+    "currency": "USD",
+    "reason": "late_delivery"
+  }
 }
 ```
 
-### 4) Enforce the decision
-- allow → proceed
-- challenge → require extra proof (MFA, deposit, manual approval, etc.)
-- deny → block
+Python SDK:
+
+```python
+decision = provider.check(
+    agent_id="agt_...",
+    policy_id="pol_default",
+    action="refund",
+    context={"amount": 49.0, "currency": "USD", "reason": "late_delivery"},
+)
+```
+
+curl (quick test):
+
+```bash
+curl -sS -X POST "https://api.clawb.ai/api/v1/check" \
+  -H "Content-Type: application/json" \
+  -H "X-Clawb-Api-Key: ck_live_replace_me" \
+  -d '{
+    "agent_id": "agt_replace_me",
+    "policy_id": "pol_default",
+    "action": "refund",
+    "context": {"amount": 49.0, "currency": "USD", "reason": "late_delivery"}
+  }'
+```
 
 ---
 
-## Quick mental model (non-technical)
+### 4) Enforce the decision in your service
 
-- **Agent** = “who is asking?”
-- **Signature** = “proof it’s really them”
-- **Policy** = “the rules for what they’re allowed to do”
-- **/v1/check** = “get a policy decision from the control plane right now”
+```python
+decision_value = (decision.get("decision") or "").lower()
+
+if decision_value == "allow":
+    # Execute business action.
+    pass
+elif decision_value == "challenge":
+    # Return challenge-required response and trigger step-up/approval path.
+    pass
+else:
+    # Deny safely.
+    pass
+```
+
+---
+
+### 5) Record trace and audit data
+
+At minimum, log:
+- `agent_id`
+- `policy_id`
+- `action`
+- `decision`
+- `trace_id` (if present)
+- `reasons` / `reason_codes` (if present)
+
+This makes incident triage and policy tuning much faster.
+
+---
+
+## Failure handling and retries
+
+- **Invalid identity (`401` or `valid=false`)**: stop immediately, do not run action.
+- **Policy `challenge` / `deny` (`403`)**: treat as expected business control outcomes, not transport failures.
+- **Rate/Quota (`429`)**: retry with backoff for non-destructive flows only.
+- **Transient server/network failures (`5xx` / timeout)**:
+  - prefer fail-closed for high-risk actions,
+  - allow controlled retry for idempotent operations.
+
+If your action is sensitive and non-idempotent, never “retry execute” unless you have deduplication/idempotency keys in place.
+
+---
+
+## Production readiness checklist
+
+- Signature verification enabled on all sensitive endpoints.
+- Timestamp validation uses milliseconds and clock skew limits.
+- `/v1/check` wired immediately before execution.
+- All three branches (`allow`, `challenge`, `deny`) tested.
+- Decision + trace metadata logged and queryable.
+- Incident runbook includes kill switch and credential revocation paths.
 
 ---
 
@@ -65,3 +180,12 @@ Content-Type: application/json
 
 - If you never attest, the agent may remain **pending** and policies may return `challenge`.
 - If your service doesn’t verify signatures, any caller can pretend to be an agent by guessing an `agent_id`.
+- Timestamp seconds vs milliseconds mismatch causes verification failures.
+- Path/body-hash mismatches cause signature verification failures.
+
+## Next links
+
+- [End-to-end walkthrough](/integration/end-to-end)
+- [Integrating `/v1/check`](/integration/check)
+- [Provider integration flow](/integration/provider-flow)
+- [API reference](/api-reference/introduction)
