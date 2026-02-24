@@ -1,0 +1,59 @@
+---
+title: Workspace agent mapping APIs
+description: Map workspace-side agent identifiers to Clawb agent IDs and query inventory metadata.
+---
+
+Use these APIs to maintain durable workspace inventory metadata.
+
+## POST `/v1/workspace/agents/upsert`
+
+Idempotently maps a workspace-side key to a Clawb `agent_id` inside the workspace.
+
+### Auth
+
+Workspace API key required.
+
+```http
+X-Clawb-Api-Key: ck_live_...
+```
+
+### Request body
+
+```json
+{
+  "external_agent_key": "internal:payments-bot",
+  "agent_id": "agt_01jv2fsk4mv9mtr9j3m7h6qk6y",
+  "display_name": "Payments assistant",
+  "labels": ["prod", "payments"],
+  "environment": "prod",
+  "source": "workspace_api",
+  "status": "active"
+}
+```
+
+### Curl
+
+```bash
+curl -sS -X POST "https://api.clawb.ai/api/v1/workspace/agents/upsert" \
+  -H "Content-Type: application/json" \
+  -H "X-Clawb-Api-Key: ck_live_..." \
+  -d '{
+    "external_agent_key": "internal:payments-bot",
+    "agent_id": "agt_01jv2fsk4mv9mtr9j3m7h6qk6y",
+    "display_name": "Payments assistant",
+    "labels": ["prod", "payments"],
+    "environment": "prod",
+    "source": "workspace_api",
+    "status": "active"
+  }'
+```
+
+## GET `/v1/workspace/agents`
+
+Lists mappings in the workspace.
+
+### Query params
+
+- `environment`
+- `status`
+- `label`

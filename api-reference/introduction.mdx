@@ -5,17 +5,13 @@ description: Reference for Clawb public metadata, workspace APIs, identity crede
 
 Use this section when you need exact endpoint contracts.
 
-These APIs are the interface to Clawb’s agent control plane for production systems.
+These APIs are the interface to Clawb's enterprise agent control plane.
 
 ## Base URL
-
-Use:
 
 ```text
 https://api.clawb.ai/api
 ```
-
-All examples in this section assume that base URL.
 
 ## Authentication model
 
@@ -24,8 +20,6 @@ Clawb has three auth modes.
 1. `Agent-signed requests` for agent-runtime endpoints.
 2. `Workspace API key` for workspace control-plane and decision endpoints.
 3. `Dashboard session auth` for dashboard-only APIs.
-
-Most pages in this API reference focus on workspace APIs.
 
 Workspace API key headers:
 
@@ -37,18 +31,6 @@ X-Clawb-Api-Key: ck_live_...
 Authorization: Bearer ck_live_...
 ```
 
-## Error model
-
-Most APIs return JSON with an `error` string on failure.
-
-```json
-{
-  "error": "missing_api_key"
-}
-```
-
-Some endpoints also return additional fields such as `retry_after`, `max_ttl_seconds`, `decision`, or `challenge`.
-
 ## Endpoint index
 
 ### Public metadata
@@ -58,11 +40,11 @@ Some endpoints also return additional fields such as `retry_after`, `max_ttl_sec
 
 ### Workspace agent inventory
 
-- [Workspace agent mapping APIs](/api-reference/provider-agents)
+- [Workspace agent mapping APIs](/api-reference/workspace-agents)
 
 ### Workspace audit
 
-- [Workspace audit query and export APIs](/api-reference/provider-audit)
+- [Workspace audit query and export APIs](/api-reference/workspace-audit)
 
 ### Identity credentials
 

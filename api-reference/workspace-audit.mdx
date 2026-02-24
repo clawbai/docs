@@ -17,36 +17,18 @@ Returns workspace-scoped audit items.
 - `decision`
 - `trace_id`
 - `limit` (default 50, max 200)
-- `cursor` (for pagination)
+- `cursor` (pagination)
 
-### Curl example
+### Curl
 
 ```bash
 curl -sS "https://api.clawb.ai/api/v1/workspace/audit/events?agent_id=agt_123&limit=100" \
   -H "X-Clawb-Api-Key: ck_live_..."
 ```
 
-### Python SDK example
-
-```python
-# Pull a time-window of decisions.
-out = control_plane.workspace_audit_events(
-    start_ms=1739952000000,
-    end_ms=1740038399000,
-    decision="deny",
-    limit=100,
-)
-
-for item in out.get("items", []):
-    # item metadata usually contains action and trace fields.
-    print(item["created_at"], item["event_type"], item.get("decision"))
-
-print("next_cursor:", out.get("next_cursor"))
-```
-
 ## POST `/v1/workspace/audit/export`
 
-Exports events as JSON or CSV (synchronous).
+Exports events as JSON or CSV.
 
 ### Request body
 
@@ -60,20 +42,6 @@ Exports events as JSON or CSV (synchronous).
   },
   "limit": 1000
 }
-```
-
-### Python SDK example
-
-```python
-export = control_plane.workspace_audit_export(
-    format="csv",
-    filters={"decision": "deny"},
-    limit=500,
-)
-
-# CSV export returns a single CSV string field.
-csv_blob = export.get("csv", "")
-print("csv bytes:", len(csv_blob.encode("utf-8")))
 ```
 
 ### Errors

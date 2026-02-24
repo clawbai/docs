@@ -33,9 +33,9 @@
           {
             "group": "Build your integration",
             "pages": [
-              "integration/provider-flow",
+              "integration/workspace-flow",
               "integration/check",
-              "integration/provider-control-plane-tutorial",
+              "integration/workspace-control-plane-tutorial",
               "integration/email-sending",
               "integration/examples"
             ]
@@ -63,8 +63,8 @@
               "api-reference/introduction",
               "api-reference/public-metadata",
               "api-reference/token-exchange",
-              "api-reference/provider-agents",
-              "api-reference/provider-audit",
+              "api-reference/workspace-agents",
+              "api-reference/workspace-audit",
               "api-reference/identity-credentials",
               "api-reference/identity-kill-switch",
               "api-reference/reputation-feedback",

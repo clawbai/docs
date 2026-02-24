@@ -20,7 +20,7 @@ When an agent asks your system to do something sensitive (refund money, deploy t
 ## 60-second integration path
 
 1. Create and attest an agent passport (`agent_id` + key).
-2. Verify inbound signed requests in your relying service.
+2. Verify inbound signed requests in your backend service or gateway.
 3. Call `/v1/check` immediately before sensitive actions.
 4. Enforce `allow | challenge | deny` in code.
 5. Capture trace/audit signals and wire incident controls.
