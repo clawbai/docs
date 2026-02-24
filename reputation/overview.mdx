@@ -49,7 +49,7 @@ Example:
 - `new`, `established`, `high`
 
 ### signals_summary
-A compact summary of the inputs (counts, recent windows), suitable for dashboards and provider decisioning.
+A compact summary of the inputs (counts, recent windows), suitable for dashboards and workspace decisioning.
 
 ---
 
@@ -62,13 +62,13 @@ A compact summary of the inputs (counts, recent windows), suitable for dashboard
 - rate-limit hits
 - anomaly flags
 
-### Provider feedback (signed)
-Providers using the Verification Service can submit signed feedback signals, e.g.:
+### Workspace feedback (signed)
+Workspace teams using the Verification Service can submit signed feedback signals, e.g.:
 - suspected abuse
 - spam / scraping
 - high error rate
 
-These signals are rate-limited and attributed to the provider.
+These signals are rate-limited and attributed to the workspace API key.
 
 ### Human/org attestations
 Organizations can attach endorsements / attestations for internal agents.
@@ -78,7 +78,7 @@ Organizations can attach endorsements / attestations for internal agents.
 ## Cold start behavior
 New agents are treated explicitly as **new**.
 
-Recommended behavior for providers:
+Recommended behavior for workspace teams:
 - allow low-risk calls but apply stricter rate limits
 - require higher thresholds for expensive actions
 - step up verification (challenge flows) for sensitive operations
@@ -86,7 +86,7 @@ Recommended behavior for providers:
 ---
 
 ## Anti-gaming design
-- Provider feedback is weighted higher than self-reported metrics.
+- Workspace feedback is weighted higher than self-reported metrics.
 - Signals decay over time.
 - Anomaly detection flags suspicious bursts.
 - Reputation computations retain provenance (who said what, when).
@@ -95,7 +95,7 @@ Recommended behavior for providers:
 
 ## Where you see reputation
 - In the dashboard (agent profile)
-- In verification responses (provider-facing)
+- In verification responses (workspace-facing)
 - In policy evaluation (internal control-plane decisions)
 
 Related:

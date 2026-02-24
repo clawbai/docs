@@ -1,6 +1,6 @@
 ---
 title: End-to-end integration scenario
-description: Complete provider flow from signed inbound request to decision, short-lived credential, audit, and incident controls.
+description: Complete enterprise flow from signed inbound request to decision, short-lived credential, audit, and incident controls.
 sidebarTitle: End-to-end flow
 ---
 
@@ -12,9 +12,9 @@ Action: `refund` on `POST /v1/refunds`
 
 Systems in path:
 1. Agent runtime (signs request)
-2. Your relying service (verifies + enforces)
+2. Your backend service or gateway (verifies + enforces)
 3. Clawb control plane (`/v1/verify`, `/v1/check`, control-plane APIs)
-4. External payments provider
+4. External payments service
 
 Required inbound headers:
 - `X-Clawb-Agent-Id`
@@ -93,7 +93,7 @@ Decision branches:
 
 ## 4) Optional: mint short-lived credential for bounded execution
 
-Use this when the follow-on provider call should be explicitly time/scoped.
+Use this when the follow-on service call should be explicitly time/scoped.
 
 Python SDK:
 
@@ -135,7 +135,7 @@ At execution time, record:
 - `policy_id`
 - `decision`
 - `trace_id` (if present)
-- downstream provider response status
+- downstream service response status
 
 Query recent events:
 
@@ -188,7 +188,7 @@ if decision_value == "challenge":
 # allow branch
 try:
     # optional: mint bounded credential
-    # execute downstream provider action
+    # execute downstream service action
     return {"status": 200, "ok": True}
 except TimeoutError:
     # transport issue, not policy issue
@@ -221,8 +221,8 @@ except TimeoutError:
 
 ## Related docs
 
-- [Workspace integration flow](/integration/provider-flow)
+- [Workspace integration flow](/integration/workspace-flow)
 - [Integrating `/v1/check`](/integration/check)
 - [Identity credential APIs](/api-reference/identity-credentials)
 - [Identity kill switch APIs](/api-reference/identity-kill-switch)
-- [Provider audit APIs](/api-reference/provider-audit)
+- [Workspace audit APIs](/api-reference/workspace-audit)

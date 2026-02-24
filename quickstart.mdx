@@ -19,7 +19,7 @@ You should have:
 - Base URL: `https://api.clawb.ai/api`
 - Workspace API key: `ck_live_...`
 - Agent identity material (`agent_id`, keypair, attested status)
-- A relying service endpoint where agent requests arrive
+- A backend service or gateway endpoint where agent requests arrive
 - Stable server clock (timestamps must be milliseconds)
 
 ---
@@ -85,7 +85,7 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/verify" \
   }'
 ```
 
-Reference: [Workspace integration flow](/integration/provider-flow)
+Reference: [Workspace integration flow](/integration/workspace-flow)
 
 ---
 
@@ -204,5 +204,5 @@ If your action is sensitive and non-idempotent, never “retry execute” unless
 
 - [End-to-end walkthrough](/integration/end-to-end)
 - [Integrating `/v1/check`](/integration/check)
-- [Workspace integration flow](/integration/provider-flow)
+- [Workspace integration flow](/integration/workspace-flow)
 - [API reference](/api-reference/introduction)

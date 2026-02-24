@@ -1,0 +1,98 @@
+---
+title: Workspace integration flow (Verify -> Check)
+---
+
+This page is for enterprise and startup teams running agent workloads in production.
+
+At request time, answer two questions:
+
+1. Is this request really from the claimed agent?
+2. Is this agent allowed to perform this action right now?
+
+## Auth quick reference
+
+```http
+# Preferred
+X-Clawb-Api-Key: ck_live_...
+
+# Alternative
+Authorization: Bearer ck_live_...
+```
+
+## Request-time flow
+
+### Step 1: verify identity
+
+- Option A (recommended): local Ed25519 verification
+- Option B: online verification with `POST /v1/verify`
+
+```bash
+curl -sS -X POST "https://api.clawb.ai/api/v1/verify" \
+  -H "Content-Type: application/json" \
+  -H "X-Clawb-Api-Key: ck_live_replace_me" \
+  -d '{
+    "agent_id": "agt_replace_me",
+    "method": "POST",
+    "path": "/v1/refunds",
+    "timestamp_ms": 1740137855000,
+    "nonce": "2f8d8b19-5e0a-4f8b-b7d4-6dc15b1fe201",
+    "body_sha256": "3adfd3eb02f15d4f4b5a9f5b2d18f8d1b6d8a7eac03f4b7a56ec8f8c2f2ff321",
+    "signature_b64": "<base64-signature>"
+  }'
+```
+
+### Step 2: enforce policy
+
+Call `POST /v1/check` with `agent_id`, `policy_id`, `action`, and optional context.
+
+```bash
+curl -sS -X POST "https://api.clawb.ai/api/v1/check" \
+  -H "Content-Type: application/json" \
+  -H "X-Clawb-Api-Key: ck_live_replace_me" \
+  -d '{
+    "agent_id": "agt_replace_me",
+    "policy_id": "pol_default",
+    "action": "refund",
+    "context": {"amount": 49.0, "currency": "USD"}
+  }'
+```
+
+Possible decisions: `allow`, `challenge`, `deny`.
+
+## Control-plane flow
+
+### Agent inventory mapping
+
+- `POST /v1/workspace/agents/upsert`
+- `GET /v1/workspace/agents`
+
+### Audit query and export
+
+- `GET /v1/workspace/audit/events`
+- `POST /v1/workspace/audit/export`
+
+### Short-lived credentials
+
+- `POST /v1/identity/credentials/mint`
+- `POST /v1/identity/credentials/revoke`
+- `POST /v1/identity/credentials/revoke-by-agent`
+
+### Incident controls
+
+- `POST /v1/identity/kill-switch/minting`
+- `POST /v1/identity/kill-switch/revoke-all`
+- `GET /v1/identity/kill-switch/status`
+
+## Recommended architecture
+
+1. Edge layer verifies inbound agent signatures.
+2. Decision layer calls `/v1/check` right before execution.
+3. Control-plane jobs sync inventory and export audits.
+4. Sensitive follow-on actions use short-lived credentials or Vault proxy.
+5. Security operations can pause minting/revoke quickly during incidents.
+
+## Next steps
+
+- [Workspace control plane tutorial](/integration/workspace-control-plane-tutorial)
+- [Workspace audit APIs](/api-reference/workspace-audit)
+- [Identity credential APIs](/api-reference/identity-credentials)

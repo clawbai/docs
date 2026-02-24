@@ -1,64 +1,36 @@
 ---
-title: Agent Verification Service
+title: Verification and Policy Gateway
 ---
 
-Clawb offers a paid **Agent Verification Service** for enterprise backend teams as part of its agent control plane.
+Clawb helps enterprise teams and startups secure agent traffic in production.
 
-When an agent sends a request to your API, you can verify:
-- the request was signed by a real agent identity
-- the agent is not revoked
-- the agent’s reputation/risk tier
-- (optionally) the human/org behind the agent, if disclosure is enabled
+When an agent calls one of your sensitive endpoints, your backend can:
+- verify the request identity (`POST /v1/verify`)
+- evaluate policy in runtime context (`POST /v1/check`)
+- enforce `allow | challenge | deny`
 
-This is designed to be easy to adopt:
-- call an online endpoint (`/v1/verify`)
-- or validate an offline assertion token locally (optional)
+## What your team gets
 
----
+Runtime controls:
+- strong request verification (signature + timestamp + nonce)
+- policy decisions right before execution
+- optional disclosure controls and reputation facets
 
-## What providers get
-A verification response is **policy-aware**:
+Operations controls:
+- workspace-scoped keys, quotas, and rate limits
+- audit query/export for investigations and compliance
+- credential minting and kill switch APIs for incident response
 
-Always available:
-- `valid_signature`
-- `agent_id`
-- `verification_tier`
-- `risk_tier`
-- `revoked` (true/false)
+## Integration model
 
-Conditionally available (depends on user/org disclosure settings):
-- `org` identity
-- `human` identity
+1. Agent signs request to your service.
+2. Your service verifies identity (`/v1/verify` or local verification).
+3. Your service calls `/v1/check`.
+4. Your service enforces `allow | challenge | deny`.
 
----
+## Related docs
 
-## Disclosure policy (default: allow)
-Clawb defaults to disclosing the owner identity **unless** the human/org hides it.
-
-Controls:
-- org/workspace default
-- per-agent override
-- per-provider override
-
-Providers should treat missing identity fields as: “not disclosed”, not “unknown”.
-
----
-
-## Pricing / access
-The Verification Service is paid.
-
-Providers authenticate with a **workspace API key** and receive:
-- quotas
-- rate limits
-- usage metrics
-
----
-
-## Integrate
 - [Verification API](/verification/verify-api)
-- (Optional) Offline verification: validate assertion tokens locally
-
-Related:
-- [Agents](/agents/overview)
-- [Reputation](/reputation/overview)
-- [Vault](/vault/overview)
+- [Workspace integration flow](/integration/workspace-flow)
+- [Identity credential APIs](/api-reference/identity-credentials)
+- [Workspace audit APIs](/api-reference/workspace-audit)

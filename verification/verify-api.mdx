@@ -2,9 +2,9 @@
 title: Verification API (v1)
 ---
 
-This page describes provider-facing verification and feedback APIs.
+This page describes workspace-facing verification and feedback APIs.
 
-## Provider auth
+## Workspace auth
 
 ```http
 # Preferred
@@ -38,7 +38,7 @@ METHOD\nPATH\nTIMESTAMP_MS\nNONCE\nBODY_SHA256
 }
 ```
 
-### curl example
+### curl
 
 ```bash
 curl -sS -X POST "https://api.clawb.ai/api/v1/verify" \
@@ -68,15 +68,9 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/verify" \
 }
 ```
 
-### Common failures
-
-- `401` missing or invalid provider key
-- `429` rate limited
-- `200` with `valid=false` for signature failures
-
 ## POST `/v1/reputation/feedback`
 
-Provider feedback with required HMAC signature headers.
+Workspace feedback with required HMAC signature headers.
 
 ### Required headers
 
@@ -90,23 +84,7 @@ Provider feedback with required HMAC signature headers.
 {timestamp_ms}\n{nonce}\n{sha256(body)}
 ```
 
-### SDK example (recommended)
-
-```python
-from clawb_agent_sdk import ClawbClient, WorkspaceControlPlane
-
-client = ClawbClient(base_url="https://api.clawb.ai/api")
-provider = WorkspaceControlPlane(client=client, api_key="ck_live_...")
-
-# SDK computes timestamp/nonce/signature headers automatically.
-provider.reputation_feedback(
-    agent_id="agt_01...",
-    verdict="bad",
-    evidence={"reason": "abuse_suspected"},
-)
-```
-
-### curl example
+### curl
 
 ```bash
 curl -sS -X POST "https://api.clawb.ai/api/v1/reputation/feedback" \
@@ -122,16 +100,7 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/reputation/feedback" \
   }'
 ```
 
-### Failure modes
-
-- `401 missing_signature_headers`
-- `401 timestamp_out_of_range`
-- `401 bad_signature`
-- `401 replay_detected`
-- `400 invalid_verdict`
-- `404 unknown_agent`
-
 ## Related docs
 
-- [Workspace integration flow](/integration/provider-flow)
-- [Provider reputation feedback API](/api-reference/reputation-feedback)
+- [Workspace integration flow](/integration/workspace-flow)
+- [Workspace reputation feedback API](/api-reference/reputation-feedback)
