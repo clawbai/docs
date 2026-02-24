@@ -21,6 +21,18 @@ Agent-signed request.
 }
 ```
 
+### curl example
+
+```bash
+curl -sS -X POST "https://api.clawb.ai/api/v1/telemetry/heartbeat" \
+  -H "Content-Type: application/json" \
+  -H "X-Clawb-Agent-Id: agt_01..." \
+  -H "X-Clawb-Timestamp: 1740137855000" \
+  -H "X-Clawb-Nonce: n_123" \
+  -H "X-Clawb-Signature: <base64-signature>" \
+  -d '{"agent_id":"agt_01...","status":"ok","latency_ms":123}'
+```
+
 ### Python SDK example
 
 ```python
@@ -50,5 +62,12 @@ print(out)
 
 - `POST /v1/telemetry/heartbeat/ingest`
 - `GET /v1/telemetry/heartbeat/recent`
+
+Quick query example:
+
+```bash
+curl -sS "https://api.clawb.ai/api/v1/telemetry/heartbeat/recent?agent_id=agt_01...&limit=20" \
+  -H "X-Clawb-Api-Key: ck_live_replace_me"
+```
 
 These are useful for ingestion pipelines and recent heartbeat views.

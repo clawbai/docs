@@ -39,6 +39,19 @@ Clawb returns:
 }
 ```
 
+curl:
+
+```bash
+curl -sS -X POST "https://api.clawb.ai/api/v1/agents/register" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "my-agent",
+    "public_key": "<base64-ed25519-public-key>",
+    "key_type": "ed25519",
+    "metadata": {"env": "dev"}
+  }'
+```
+
 ### 2) Decode the challenge (base64 → bytes)
 The challenge is shown as **base64** because JSON can’t safely carry raw bytes.
 
@@ -70,6 +83,18 @@ Call `POST /v1/agents/attest`:
 If everything is correct, Clawb responds with:
 ```json
 { "agent_id": "agt_...", "status": "active" }
+```
+
+curl:
+
+```bash
+curl -sS -X POST "https://api.clawb.ai/api/v1/agents/attest" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "agent_id": "agt_...",
+    "challenge_id": "ch_...",
+    "signature": "<base64-signature>"
+  }'
 ```
 
 ---
