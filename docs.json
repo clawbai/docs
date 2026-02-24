@@ -14,35 +14,47 @@
         "tab": "Docs",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Start here",
             "pages": [
               "index",
-              "quickstart"
+              "quickstart",
+              "integration/end-to-end"
             ]
           },
           {
-            "group": "Agents",
+            "group": "Core concepts",
             "pages": [
               "agents/overview",
-              "agents/attestation"
-            ]
-          },
-          {
-            "group": "Policies",
-            "pages": [
+              "agents/attestation",
               "policies/overview",
               "policies/schema"
             ]
           },
           {
-            "group": "Integration",
+            "group": "Build your integration",
             "pages": [
               "integration/provider-flow",
-              "integration/provider-control-plane-tutorial",
-              "integration/end-to-end",
               "integration/check",
+              "integration/provider-control-plane-tutorial",
               "integration/email-sending",
               "integration/examples"
+            ]
+          },
+          {
+            "group": "SDKs",
+            "pages": [
+              "sdk/python"
+            ]
+          },
+          {
+            "group": "Operate in production",
+            "pages": [
+              "verification/overview",
+              "verification/verify-api",
+              "verification/approval-links",
+              "reputation/overview",
+              "vault/overview",
+              "vault/api"
             ]
           },
           {
@@ -57,33 +69,6 @@
               "api-reference/reputation-feedback",
               "api-reference/policies-sync",
               "api-reference/telemetry"
-            ]
-          },
-          {
-            "group": "Vault",
-            "pages": [
-              "vault/overview",
-              "vault/api"
-            ]
-          },
-          {
-            "group": "Reputation",
-            "pages": [
-              "reputation/overview"
-            ]
-          },
-          {
-            "group": "Verification service",
-            "pages": [
-              "verification/overview",
-              "verification/verify-api",
-              "verification/approval-links"
-            ]
-          },
-          {
-            "group": "SDK",
-            "pages": [
-              "sdk/python"
             ]
           }
         ]
