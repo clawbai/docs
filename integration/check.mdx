@@ -67,10 +67,10 @@ When challenged:
 ## Python SDK example
 
 ```python
-from clawb_agent_sdk import ClawbClient, ApiProvider
+from clawb_agent_sdk import ClawbClient, WorkspaceControlPlane
 
 client = ClawbClient(base_url="https://api.clawb.ai/api")
-provider = ApiProvider(client=client, api_key="ck_live_...")
+provider = WorkspaceControlPlane(client=client, api_key="ck_live_...")
 
 decision = provider.check(
     agent_id="agt_01...",
@@ -92,6 +92,6 @@ else:
 
 ## Related docs
 
-- [Provider integration flow](/integration/provider-flow)
+- [Workspace integration flow](/integration/provider-flow)
 - [Enterprise policy sync API](/api-reference/policies-sync)
 - [Identity credential APIs](/api-reference/identity-credentials)

@@ -1,13 +1,13 @@
 ---
-title: Provider audit APIs
-description: Query and export provider-scoped audit events.
+title: Workspace audit APIs
+description: Query and export workspace-scoped audit events.
 ---
 
 Use these APIs for investigations, compliance exports, and operational tracing.
 
-## GET `/v1/provider/audit/events`
+## GET `/v1/workspace/audit/events`
 
-Returns provider-scoped audit items.
+Returns workspace-scoped audit items.
 
 ### Query params
 
@@ -22,7 +22,7 @@ Returns provider-scoped audit items.
 ### Curl example
 
 ```bash
-curl -sS "https://api.clawb.ai/api/v1/provider/audit/events?agent_id=agt_123&limit=100" \
+curl -sS "https://api.clawb.ai/api/v1/workspace/audit/events?agent_id=agt_123&limit=100" \
   -H "X-Clawb-Api-Key: ck_live_..."
 ```
 
@@ -30,7 +30,7 @@ curl -sS "https://api.clawb.ai/api/v1/provider/audit/events?agent_id=agt_123&lim
 
 ```python
 # Pull a time-window of decisions.
-out = provider.provider_audit_events(
+out = control_plane.workspace_audit_events(
     start_ms=1739952000000,
     end_ms=1740038399000,
     decision="deny",
@@ -44,7 +44,7 @@ for item in out.get("items", []):
 print("next_cursor:", out.get("next_cursor"))
 ```
 
-## POST `/v1/provider/audit/export`
+## POST `/v1/workspace/audit/export`
 
 Exports events as JSON or CSV (synchronous).
 
@@ -65,7 +65,7 @@ Exports events as JSON or CSV (synchronous).
 ### Python SDK example
 
 ```python
-export = provider.provider_audit_export(
+export = control_plane.workspace_audit_export(
     format="csv",
     filters={"decision": "deny"},
     limit=500,

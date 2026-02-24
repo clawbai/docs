@@ -1,17 +1,17 @@
 ---
-title: Provider control plane tutorial
-description: End-to-end setup for provider mappings, audit, credential minting, kill switch, and feedback with Python SDK.
-sidebarTitle: Provider control plane
+title: Workspace control plane tutorial
+description: End-to-end setup for workspace mappings, audit, credential minting, kill switch, and feedback with Python SDK.
+sidebarTitle: Workspace control plane
 ---
 
 This tutorial is written for junior developers and focuses on copy/paste-friendly steps.
 
 ## What you will build
 
-You will implement a provider backend workflow that can:
+You will implement a workspace backend workflow that can:
 
-1. Sync provider agent identity mappings.
-2. Query provider-scoped audit data.
+1. Sync workspace agent identity mappings.
+2. Query workspace-scoped audit data.
 3. Mint short-lived credentials for follow-on operations.
 4. Revoke credentials and use kill switches during incidents.
 5. Submit reputation feedback signals.
@@ -20,28 +20,28 @@ You will implement a provider backend workflow that can:
 
 - Python 3.9+
 - `pip install clawb-agent-sdk`
-- One provider API key (`ck_live_...` or `ck_test_...`)
+- One workspace API key (`ck_live_...` or `ck_test_...`)
 - One existing `agent_id`
 
 ## Step 1: setup client objects
 
 ```python tutorial_setup.py
-from clawb_agent_sdk import ClawbClient, ApiProvider
+from clawb_agent_sdk import ClawbClient, WorkspaceControlPlane
 
 BASE_URL = "https://api.clawb.ai/api"
-PROVIDER_API_KEY = "ck_test_replace_me"
+WORKSPACE_API_KEY = "ck_test_replace_me"
 
 # Low-level HTTP client.
 client = ClawbClient(base_url=BASE_URL)
 
-# High-level provider API helper.
-provider = ApiProvider(client=client, api_key=PROVIDER_API_KEY)
+# High-level workspace API helper.
+control_plane = WorkspaceControlPlane(client=client, api_key=WORKSPACE_API_KEY)
 ```
 
-## Step 2: upsert provider mapping
+## Step 2: upsert workspace mapping
 
 ```python tutorial_upsert.py
-mapping = provider.provider_agents_upsert(
+mapping = control_plane.workspace_agents_upsert(
     external_agent_key="github:app:payments-bot",
     agent_id="agt_01replace",
     display_name="Payments automation bot",
@@ -56,7 +56,7 @@ print(mapping)
 ## Step 3: mint short-lived credential
 
 ```python tutorial_mint.py
-mint = provider.identity_credentials_mint(
+mint = control_plane.identity_credentials_mint(
     agent_id="agt_01replace",
     provider="sendgrid",
     audience="clawb.provider",
@@ -74,7 +74,7 @@ print("expires_at:", credential["expires_at"])
 ## Step 4: query audit events
 
 ```python tutorial_audit.py
-audit = provider.provider_audit_events(limit=20)
+audit = control_plane.workspace_audit_events(limit=20)
 for event in audit.get("items", []):
     print(event["created_at"], event["event_type"], event.get("decision"))
 ```
@@ -82,7 +82,7 @@ for event in audit.get("items", []):
 ## Step 5: submit reputation feedback
 
 ```python tutorial_feedback.py
-feedback = provider.reputation_feedback(
+feedback = control_plane.reputation_feedback(
     agent_id="agt_01replace",
     verdict="bad",
     evidence={"reason": "repeated invalid_signature attempts"},
@@ -94,49 +94,49 @@ print(feedback)
 
 ```python tutorial_incident.py
 # Pause minting immediately.
-provider.identity_kill_switch_minting(paused=True, reason="incident INC-42")
+control_plane.identity_kill_switch_minting(paused=True, reason="incident INC-42")
 
 # Revoke all minted credentials.
-provider.identity_kill_switch_revoke_all(reason="incident INC-42")
+control_plane.identity_kill_switch_revoke_all(reason="incident INC-42")
 
 # Optional: revoke all credentials for one agent.
-provider.identity_credentials_revoke_by_agent(
+control_plane.identity_credentials_revoke_by_agent(
     agent_id="agt_01replace",
     reason="agent_compromised",
 )
 
 # Verify current switch state.
-print(provider.identity_kill_switch_status())
+print(control_plane.identity_kill_switch_status())
 ```
 
 ## Curl equivalents
 
-### Upsert provider mapping
+### Upsert workspace mapping
 
 ```bash
-curl -sS -X POST https://api.clawb.ai/api/v1/provider/agents/upsert \
+curl -sS -X POST https://api.clawb.ai/api/v1/workspace/agents/upsert \
   -H "Content-Type: application/json" \
   -H "X-Clawb-Api-Key: ck_test_replace_me" \
   -d '{"external_agent_key":"github:app:payments-bot","agent_id":"agt_01replace","environment":"prod"}'
 ```
 
-### Query provider audit
+### Query workspace audit
 
 ```bash
-curl -sS "https://api.clawb.ai/api/v1/provider/audit/events?limit=20" \
+curl -sS "https://api.clawb.ai/api/v1/workspace/audit/events?limit=20" \
   -H "X-Clawb-Api-Key: ck_test_replace_me"
 ```
 
 ## Troubleshooting
 
 1. `missing_api_key`: verify header uses `X-Clawb-Api-Key`.
-2. `unknown_agent`: ensure `agent_id` exists in your provider workspace.
+2. `unknown_agent`: ensure `agent_id` exists in your workspace.
 3. `invalid_ttl`: keep `ttl_seconds` within server max.
 4. `minting_paused`: unpause with `identity_kill_switch_minting(paused=False)`.
 5. `bad_signature` on feedback: use SDK helper instead of manual signing.
 
 ## Next steps
 
-- Read [Provider integration flow](/integration/provider-flow)
+- Read [Workspace integration flow](/integration/provider-flow)
 - Read [Identity credential APIs](/api-reference/identity-credentials)
-- Read [Provider audit APIs](/api-reference/provider-audit)
+- Read [Workspace audit APIs](/api-reference/provider-audit)
