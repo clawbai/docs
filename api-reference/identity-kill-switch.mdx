@@ -18,6 +18,15 @@ Pause or resume minting.
 }
 ```
 
+### curl
+
+```bash
+curl -sS -X POST "https://api.clawb.ai/api/v1/identity/kill-switch/minting" \
+  -H "Content-Type: application/json" \
+  -H "X-Clawb-Api-Key: ck_live_replace_me" \
+  -d '{"paused": true, "reason": "incident INC-123"}'
+```
+
 ### Python SDK
 
 ```python
@@ -32,11 +41,23 @@ provider.identity_kill_switch_minting(paused=False, reason="incident closed")
 
 Sets a workspace cutoff timestamp so existing minted credentials are treated as revoked.
 
+```bash
+curl -sS -X POST "https://api.clawb.ai/api/v1/identity/kill-switch/revoke-all" \
+  -H "Content-Type: application/json" \
+  -H "X-Clawb-Api-Key: ck_live_replace_me" \
+  -d '{"reason":"key compromise"}'
+```
+
 ```python
 provider.identity_kill_switch_revoke_all(reason="key compromise")
 ```
 
 ## GET `/v1/identity/kill-switch/status`
+
+```bash
+curl -sS "https://api.clawb.ai/api/v1/identity/kill-switch/status" \
+  -H "X-Clawb-Api-Key: ck_live_replace_me"
+```
 
 ```python
 status = provider.identity_kill_switch_status()

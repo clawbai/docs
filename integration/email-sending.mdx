@@ -42,6 +42,22 @@ X-Clawb-Api-Key: ck_live_9f2b3c4d5e6f7a8b
 }
 ```
 
+```bash
+curl -sS -X POST "https://api.clawb.ai/api/v1/check" \
+  -H "Content-Type: application/json" \
+  -H "X-Clawb-Api-Key: ck_live_9f2b3c4d5e6f7a8b" \
+  -d '{
+    "agent_id": "agt_...",
+    "policy_id": "pol_email",
+    "action": "send_email",
+    "email": {
+      "to": ["user@example.com"],
+      "subject": "Your receipt",
+      "attachments": []
+    }
+  }'
+```
+
 ## Step 2 — Send (only if allowed)
 
 `/v1/email/send` requires a provider API key header.
@@ -61,6 +77,22 @@ X-Clawb-Api-Key: ck_live_9f2b3c4d5e6f7a8b
     "html": "<p>Thanks for your purchase!</p>"
   }
 }
+```
+
+```bash
+curl -sS -X POST "https://api.clawb.ai/api/v1/email/send" \
+  -H "Content-Type: application/json" \
+  -H "X-Clawb-Api-Key: ck_live_9f2b3c4d5e6f7a8b" \
+  -d '{
+    "agent_id": "agt_...",
+    "policy_id": "pol_email",
+    "email": {
+      "to": ["user@example.com"],
+      "subject": "Your receipt",
+      "text": "Thanks for your purchase!",
+      "html": "<p>Thanks for your purchase!</p>"
+    }
+  }'
 ```
 
 ### Response

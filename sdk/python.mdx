@@ -93,6 +93,23 @@ verify = provider.verify(
 print(verify)
 ```
 
+Raw API fallback (curl):
+
+```bash
+curl -sS -X POST "https://api.clawb.ai/api/v1/verify" \
+  -H "Content-Type: application/json" \
+  -H "X-Clawb-Api-Key: ck_live_replace_me" \
+  -d '{
+    "agent_id": "agt_01...",
+    "method": "POST",
+    "path": "/v1/refunds",
+    "timestamp_ms": 1740137855000,
+    "nonce": "2f8d8b19-5e0a-4f8b-b7d4-6dc15b1fe201",
+    "body_sha256": "3adfd3eb02f15d4f4b5a9f5b2d18f8d1b6d8a7eac03f4b7a56ec8f8c2f2ff321",
+    "signature_b64": "<base64-signature>"
+  }'
+```
+
 ### Enforce policy decision
 
 ```python
@@ -232,6 +249,22 @@ creds = get_aws_credentials(
     role_session_name="clawb-agent-session",
 )
 print(creds["AccessKeyId"])
+```
+
+Raw API fallback (curl):
+
+```bash
+curl -sS -X POST "https://api.clawb.ai/api/v1/token/exchange" \
+  -H "Content-Type: application/json" \
+  -H "X-Clawb-Agent-Id: agt_01..." \
+  -H "X-Clawb-Timestamp: 1740137855000" \
+  -H "X-Clawb-Nonce: n_123" \
+  -H "X-Clawb-Signature: <base64-signature>" \
+  -d '{
+    "audience": "aws",
+    "policy_id": "pol_default",
+    "scopes": ["s3:GetObject"]
+  }'
 ```
 
 ## Common mistakes
