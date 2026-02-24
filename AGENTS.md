@@ -1,3 +1,12 @@
+# Session bootstrap
+
+- At the start of every new session, read:
+  - `/Users/saeed/Projects/8-clawb/.codex/memory/initialize.md`
+  - `/Users/saeed/Projects/8-clawb/.codex/memory.md`
+- Use it as persistent project context before making changes.
+- If the memory file is missing, continue and report it once.
+- Never write secrets into git-tracked files.
+
 > **First-time setup**: This is a default AGENTS.md file. Customize it for your project's specific needs, including your preferred code languages, terminology, style guidelines, and content requirements.
 
 # Documentation agent instructions
