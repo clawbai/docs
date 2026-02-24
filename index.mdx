@@ -2,9 +2,9 @@
 title: Clawb Docs
 ---
 
-Clawb is the **bouncer for agent actions**.
+Clawb is an **agent control plane for production systems**.
 
-When an agent asks your system to do something sensitive (refund money, deploy to prod, call a paid API), your backend asks Clawb for a decision:
+When an agent asks your system to do something sensitive (refund money, deploy to prod, call a paid API), your backend uses Clawb’s control plane to verify identity and enforce a policy decision:
 
 - **allow** → proceed
 - **challenge** → require extra proof (human approval, 2FA, business-hours rule, telemetry threshold, etc.)

@@ -4,7 +4,7 @@ title: Quickstart
 
 ## What you’re building
 
-You’re putting Clawb in front of sensitive actions by calling **`POST /v1/check`** with the action and its context.
+You’re integrating Clawb as the control plane for sensitive agent actions by calling **`POST /v1/check`** with the action and its context.
 
 Clawb returns a decision:
 - `allow` → proceed
@@ -57,7 +57,7 @@ Content-Type: application/json
 - **Agent** = “who is asking?”
 - **Signature** = “proof it’s really them”
 - **Policy** = “the rules for what they’re allowed to do”
-- **/v1/check** = “ask the bouncer what to do right now”
+- **/v1/check** = “get a policy decision from the control plane right now”
 
 ---
 
