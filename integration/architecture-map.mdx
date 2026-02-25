@@ -60,7 +60,7 @@ flowchart TD
   end
 
   subgraph Status & Contact
-    S1[GET /v1/status/summary|checks|errors] --> S2[Status page /status]
+    S1[GET status summary + checks + errors] --> S2[Status page /status]
     S3[POST /v1/status/checks/run or cron command] --> S4[StatusCheck rows]
     C1[POST /v1/contact/submit] --> C2[ContactSubmission + notify email]
   end
