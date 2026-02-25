@@ -1,0 +1,103 @@
+---
+title: "Architecture map"
+sidebarTitle: "Architecture"
+description: "Detailed map of Clawb system architecture, control-plane flows, data domains, and deployment topology."
+---
+
+## System context
+
+```mermaid
+flowchart LR
+  U[Enterprise User] --> S[clawb.ai Site<br/>Vite static]
+  U --> D[app.clawb.ai Dashboard<br/>React SPA]
+  A[Agent Runtime] -->|Signed requests| API[api.clawb.ai<br/>Django + DRF]
+
+  D -->|Magic link auth + session| API
+  API --> DB[(Postgres)]
+  API --> Mail[Resend / Email backend]
+
+  C[Render Cron<br/>run_status_checks] --> API
+
+  API --> Ext[External APIs/Tools]
+  A --> Ext
+```
+
+## Control-plane domains
+
+```mermaid
+flowchart TD
+  subgraph Auth & Workspace
+    L1[POST /auth/start-login] --> L2[Magic link email]
+    L2 --> L3[GET/POST /auth/verify-login]
+    L3 --> L4[Session cookie + active workspace in session]
+    L4 --> L5[GET /auth/me]
+    L5 --> L6[GET/POST /v1/workspaces]
+    L6 --> L7[POST /v1/workspaces/select]
+  end
+
+  subgraph Agent Identity & Policy
+    R1[POST /v1/agents/register] --> R2[Agent row + key + challenge]
+    R2 --> R3[POST /v1/agents/attest]
+    R3 --> R4[Agent active]
+    A1[POST /v1/verify] --> P1[Signature + nonce + key checks]
+    A2[POST /v1/check] --> P2[Policy eval allow/challenge/deny]
+    P2 --> P3[PolicyChallenge + approval links if challenge]
+  end
+
+  subgraph Credential & Token
+    T1[POST /v1/identity/credentials/mint] --> T2[AgentMintedCredential]
+    T3[POST /v1/identity/credentials/revoke] --> T2
+    T4[POST /v1/token/exchange] --> T5[Scoped token claims]
+    T6[Kill switch endpoints] --> T2
+  end
+
+  subgraph Vault
+    V1[POST /v1/vault/secret-sets] --> V2[Secret set + versions]
+    V3[POST /v1/vault/grants] --> V4[Access grants]
+    V5[POST /v1/vault/leases/workflow] --> V6[Workflow lease]
+    V7[POST /v1/vault/leases/request/mint] --> V8[Request lease]
+    V9[POST /v1/vault/secrets/read<br/>or /v1/vault/proxy/request] --> Ext2[Target API]
+  end
+
+  subgraph Status & Contact
+    S1[GET /v1/status/summary|checks|errors] --> S2[Status page /status]
+    S3[POST /v1/status/checks/run or cron command] --> S4[StatusCheck rows]
+    C1[POST /v1/contact/submit] --> C2[ContactSubmission + notify email]
+  end
+```
+
+## Core data topology
+
+```mermaid
+erDiagram
+  USER ||--o{ WORKSPACE : owns
+  WORKSPACE ||--o{ AGENT : contains
+  AGENT ||--o{ AGENT_KEY : has
+  WORKSPACE ||--o{ POLICY : owns
+  POLICY ||--o{ POLICY_VERSION : versions
+  WORKSPACE ||--o{ WORKSPACE_API_KEY : has
+  WORKSPACE ||--o{ POLICY_CHALLENGE : emits
+  AGENT ||--o{ AGENT_MINTED_CREDENTIAL : mints
+  WORKSPACE ||--o{ VAULT_SECRET_SET : owns
+  VAULT_SECRET_SET ||--o{ VAULT_SECRET_SET_VERSION : versions
+  AGENT ||--o{ VAULT_ACCESS_GRANT : receives
+  WORKSPACE ||--o{ AUDIT_EVENT : logs
+  WORKSPACE ||--o{ STATUS_COMPONENT : monitors
+  STATUS_COMPONENT ||--o{ STATUS_CHECK : records
+```
+
+## Deployment topology (Render)
+
+```mermaid
+flowchart LR
+  subgraph Deploy Topology
+    R1[Render Web Service: API<br/>Django/Gunicorn]
+    R2[Render Static: Dashboard<br/>frontend build]
+    R3[Render Static: Site<br/>site build]
+    R4[Render Cron: status checks<br/>python manage.py run_status_checks]
+  end
+
+  R1 --> DB2[(Managed DB)]
+  R1 --> SMTP[Resend]
+  R4 --> R1
+```
