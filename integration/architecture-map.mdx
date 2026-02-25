@@ -1,25 +1,116 @@
 ---
 title: "Architecture map"
 sidebarTitle: "Architecture"
-description: "Detailed map of Clawb system architecture, control-plane flows, data domains, and deployment topology."
+description: "Detailed map of Clawb system architecture, trust boundaries, control-plane flows, and data domains."
 ---
 
 ## System context
 
 ```mermaid
 flowchart LR
-  U[Enterprise User] --> S[clawb.ai Site<br/>Vite static]
-  U --> D[app.clawb.ai Dashboard<br/>React SPA]
-  A[Agent Runtime] -->|Signed requests| API[api.clawb.ai<br/>Django + DRF]
+  subgraph Human Boundary
+    U[Enterprise operator]
+    B[Browser]
+  end
 
-  D -->|Magic link auth + session| API
-  API --> DB[(Postgres)]
-  API --> Mail[Resend / Email backend]
+  subgraph App Boundary
+    SITE[clawb.ai site]
+    DASH[app.clawb.ai dashboard SPA]
+  end
 
-  C[Render Cron<br/>run_status_checks] --> API
+  subgraph Clawb Control Plane
+    API[api.clawb.ai\nDjango + DRF]
+    DB[(Postgres)]
+    MAIL[Email backend]
+    CRON[Status cron runner]
+  end
 
-  API --> Ext[External APIs/Tools]
-  A --> Ext
+  subgraph Agent Boundary
+    AGENT[Agent runtime]
+    SVC[Enterprise service/gateway]
+  end
+
+  subgraph External Boundary
+    EXT[External APIs + SaaS]
+  end
+
+  U --> B
+  B --> SITE
+  B --> DASH
+
+  DASH -->|magic-link session auth| API
+  API --> DB
+  API --> MAIL
+  CRON --> API
+
+  AGENT -->|signed request| SVC
+  SVC -->|API key auth| API
+  SVC --> EXT
+  API --> EXT
+```
+
+### Auth and trust boundaries
+
+| Caller | Main auth mode | Primary endpoints |
+|---|---|---|
+| Dashboard user (browser) | Session cookie (magic link login) | `/auth/*`, `/v1/workspaces`, `/v1/agents`, `/v1/policies`, `/v1/vault/*` |
+| Enterprise backend/gateway | Workspace API key | `/v1/check`, `/v1/workspace/*`, `/v1/identity/*` |
+| Agent runtime | Signature + nonce/timestamp via relying service or signed agent endpoints | `/v1/verify`, `/v1/telemetry/heartbeat`, vault signed endpoints |
+| Public approval links | Opaque one-time tokens | `/v1/approval-links/*`, `/v1/agent-approval/*`, `/v1/policy-challenges/*` |
+
+## End-to-end decision loop (verify + policy)
+
+```mermaid
+sequenceDiagram
+  participant Agent
+  participant Gateway as Enterprise Gateway
+  participant Clawb as Clawb API
+  participant Human as Approver
+  participant Target as Target Service
+
+  Agent->>Gateway: Request + signature + nonce + timestamp
+  Gateway->>Clawb: POST /v1/verify
+  Clawb-->>Gateway: valid/invalid + identity context
+
+  Gateway->>Clawb: POST /v1/check (action + context)
+  alt allow
+    Clawb-->>Gateway: decision=allow
+    Gateway->>Target: execute action
+  else challenge
+    Clawb-->>Gateway: decision=challenge + challenge_id
+    Human->>Clawb: approve/deny challenge link
+    Gateway->>Clawb: re-check or poll decision
+    Clawb-->>Gateway: allow or deny
+  else deny
+    Clawb-->>Gateway: decision=deny + reason_codes
+  end
+```
+
+## Vault + JWT credential path
+
+```mermaid
+sequenceDiagram
+  participant Admin as Dashboard Admin
+  participant Clawb as Clawb API
+  participant Agent
+  participant External as External API
+
+  Admin->>Clawb: Configure secret sets, versions, grants
+  Agent->>Clawb: POST /v1/vault/leases/workflow
+  Clawb-->>Agent: workflow lease token
+
+  Agent->>Clawb: POST /v1/vault/leases/request/mint
+  Clawb-->>Agent: short-lived request lease
+
+  Agent->>Clawb: POST /v1/identity/credentials/mint
+  Clawb-->>Agent: short-lived JWT/opaque credential
+
+  Agent->>Clawb: POST /v1/vault/proxy/request (or /secrets/read)
+  Clawb->>External: proxied call with injected secret/temporary credential
+  External-->>Clawb: response
+  Clawb-->>Agent: response + audit trace
+
+  Note over Clawb: Revocation + kill switch can pause minting\nor revoke credential windows quickly.
 ```
 
 ## Control-plane domains
@@ -56,7 +147,7 @@ flowchart TD
     V3[POST /v1/vault/grants] --> V4[Access grants]
     V5[POST /v1/vault/leases/workflow] --> V6[Workflow lease]
     V7[POST /v1/vault/leases/request/mint] --> V8[Request lease]
-    V9[POST /v1/vault/secrets/read<br/>or /v1/vault/proxy/request] --> Ext2[Target API]
+    V9[POST /v1/vault/secrets/read or /v1/vault/proxy/request] --> Ext2[Target API]
   end
 
   subgraph Status & Contact
@@ -84,20 +175,4 @@ erDiagram
   WORKSPACE ||--o{ AUDIT_EVENT : logs
   WORKSPACE ||--o{ STATUS_COMPONENT : monitors
   STATUS_COMPONENT ||--o{ STATUS_CHECK : records
-```
-
-## Deployment topology (Render)
-
-```mermaid
-flowchart LR
-  subgraph Deploy Topology
-    R1[Render Web Service: API<br/>Django/Gunicorn]
-    R2[Render Static: Dashboard<br/>frontend build]
-    R3[Render Static: Site<br/>site build]
-    R4[Render Cron: status checks<br/>python manage.py run_status_checks]
-  end
-
-  R1 --> DB2[(Managed DB)]
-  R1 --> SMTP[Resend]
-  R4 --> R1
 ```
