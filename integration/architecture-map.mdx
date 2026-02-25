@@ -4,7 +4,14 @@ sidebarTitle: "Architecture"
 description: "Detailed map of Clawb system architecture, trust boundaries, control-plane flows, and data domains."
 ---
 
-## System context
+This document maps the current Clawb system architecture from the codebase.
+
+## How to view visually
+- GitHub: open this file in the repository UI (Mermaid renders automatically).
+- VS Code: open this file and use Markdown Preview (`Cmd/Ctrl + Shift + V`).
+- Mermaid Live Editor: copy/paste any diagram block into https://mermaid.live.
+
+## 1) System Context
 
 ```mermaid
 flowchart LR
@@ -58,7 +65,7 @@ flowchart LR
 | Agent runtime | Signature + nonce/timestamp via relying service or signed agent endpoints | `/v1/verify`, `/v1/telemetry/heartbeat`, vault signed endpoints |
 | Public approval links | Opaque one-time tokens | `/v1/approval-links/*`, `/v1/agent-approval/*`, `/v1/policy-challenges/*` |
 
-## End-to-end decision loop (verify + policy)
+## 2) End-to-End Decision Loop (Verify + Policy)
 
 ```mermaid
 sequenceDiagram
@@ -86,7 +93,7 @@ sequenceDiagram
   end
 ```
 
-## Vault + JWT credential path
+## 3) Vault + JWT Credential Path
 
 ```mermaid
 sequenceDiagram
@@ -113,12 +120,12 @@ sequenceDiagram
   Note over Clawb: Revocation + kill switch can pause minting\nor revoke credential windows quickly.
 ```
 
-## Control-plane domains
+## 4) Control Plane Domains
 
 ```mermaid
 flowchart TD
   subgraph Auth & Workspace
-    L1[POST /auth/start-login] --> L2[Magic link email]
+    L1[POST /auth/start-login] --> L2[Email magic link]
     L2 --> L3[GET/POST /auth/verify-login]
     L3 --> L4[Session cookie + active workspace in session]
     L4 --> L5[GET /auth/me]
@@ -157,7 +164,7 @@ flowchart TD
   end
 ```
 
-## Core data topology
+## 5) Core Data Model Topology
 
 ```mermaid
 erDiagram
