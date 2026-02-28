@@ -62,15 +62,23 @@ The challenge is shown as **base64** because JSON can’t safely carry raw bytes
 **Important:** you must sign the **decoded bytes**, not the base64 text.
 
 Conceptually:
+<CodeGroup>
+
 ```text
 challenge_bytes = base64_decode(challenge)
 ```
 
+</CodeGroup>
+
 ### 3) Sign the decoded bytes with Ed25519
+<CodeGroup>
+
 ```text
 signature_bytes = ed25519_sign(private_key, challenge_bytes)
 signature = base64_encode(signature_bytes)
 ```
+
+</CodeGroup>
 
 Ed25519 signatures are always **64 bytes**.
 
@@ -144,6 +152,8 @@ Each example below assumes:
 
 
 ### Node.js (built-in `crypto`)
+<CodeGroup>
+
 ```js
 import crypto from "crypto";
 
@@ -174,6 +184,8 @@ console.log({ agent_id, challenge_id, signature: signature_b64 });
 
 // 5) POST signature_b64 to /v1/agents/attest
 ```
+
+</CodeGroup>
 
 ### Python (`cryptography`)
 Install:
@@ -218,6 +230,8 @@ print({
 </CodeGroup>
 
 ### Go (standard library)
+<CodeGroup>
+
 ```go
 package main
 
@@ -262,6 +276,8 @@ func main() {
 	fmt.Printf("agent_id=%s\nchallenge_id=%s\nsignature=%s\n", agentID, challengeID, signatureB64)
 }
 ```
+
+</CodeGroup>
 
 ### Rust (`ed25519-dalek` + `pkcs8`)
 `Cargo.toml`:
@@ -325,9 +341,13 @@ Timestamp must be `milliseconds`; using `seconds` causes signature validation fa
 ### Canonical string (exact format)
 Build this string (newlines matter):
 
+<CodeGroup>
+
 ```text
 METHOD\nPATH\nTIMESTAMP\nNONCE\nSHA256(body)
 ```
+
+</CodeGroup>
 
 Where:
 - `METHOD` is uppercase (`POST`, `GET`, …)

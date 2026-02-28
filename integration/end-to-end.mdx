@@ -40,6 +40,8 @@ These values are the source of truth for verification.
 
 Use local verification or online `/v1/verify`:
 
+<CodeGroup>
+
 ```python
 verify_result = control_plane.verify(
     agent_id=agent_id,
@@ -54,6 +56,8 @@ verify_result = control_plane.verify(
 if not verify_result.get("valid"):
     raise ValueError("invalid signature")
 ```
+
+</CodeGroup>
 
 ---
 
@@ -191,6 +195,8 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/identity/kill-switch/revoke-all" \
 
 ## Unified branch pseudocode
 
+<CodeGroup>
+
 ```python
 if not verify_result.get("valid"):
     return {"status": 401, "error": "invalid_signature"}
@@ -210,6 +216,8 @@ except TimeoutError:
     # transport issue, not policy issue
     return {"status": 502, "error": "provider_unavailable"}
 ```
+
+</CodeGroup>
 
 ---
 

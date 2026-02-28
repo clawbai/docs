@@ -13,6 +13,8 @@ Agent-signed request.
 
 ### Request body
 
+<CodeGroup>
+
 ```json
 {
   "agent_id": "agt_01...",
@@ -21,7 +23,11 @@ Agent-signed request.
 }
 ```
 
+</CodeGroup>
+
 ### curl example
+
+<CodeGroup>
 
 ```bash
 curl -sS -X POST "https://api.clawb.ai/api/v1/telemetry/heartbeat" \
@@ -33,7 +39,11 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/telemetry/heartbeat" \
   -d '{"agent_id":"agt_01...","status":"ok","latency_ms":123}'
 ```
 
+</CodeGroup>
+
 ### Python SDK example
+
+<CodeGroup>
 
 ```python
 from clawb_agent_sdk import ClawbClient
@@ -52,6 +62,8 @@ out = agent_client.post(
 print(out)
 ```
 
+</CodeGroup>
+
 ### Errors
 
 - `400 {"error":"missing_agent_id"}`
@@ -65,9 +77,13 @@ print(out)
 
 Quick query example:
 
+<CodeGroup>
+
 ```bash
 curl -sS "https://api.clawb.ai/api/v1/telemetry/heartbeat/recent?agent_id=agt_01...&limit=20" \
   -H "X-Clawb-Api-Key: ck_live_replace_me"
 ```
+
+</CodeGroup>
 
 These are useful for ingestion pipelines and recent heartbeat views.

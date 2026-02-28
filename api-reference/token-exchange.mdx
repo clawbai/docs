@@ -13,6 +13,8 @@ Workspace API key (same auth model as `/v1/check`).
 
 ### Request body
 
+<CodeGroup>
+
 ```json
 {
   "agent_id": "agt_...",
@@ -30,7 +32,11 @@ Workspace API key (same auth model as `/v1/check`).
 }
 ```
 
+</CodeGroup>
+
 ### Curl example
+
+<CodeGroup>
 
 ```bash
 curl -sS -X POST https://api.clawb.ai/api/v1/token/exchange \
@@ -52,7 +58,11 @@ curl -sS -X POST https://api.clawb.ai/api/v1/token/exchange \
   }'
 ```
 
+</CodeGroup>
+
 ### Success response
+
+<CodeGroup>
 
 ```json
 {
@@ -62,6 +72,8 @@ curl -sS -X POST https://api.clawb.ai/api/v1/token/exchange \
   "expires_in": 900
 }
 ```
+
+</CodeGroup>
 
 ### Error patterns
 

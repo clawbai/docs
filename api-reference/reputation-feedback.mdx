@@ -18,11 +18,17 @@ You must send all of the following:
 
 Signature message format:
 
+<CodeGroup>
+
 ```text
 {timestamp_ms}\n{nonce}\n{sha256(body)}
 ```
 
+</CodeGroup>
+
 ### Request body
+
+<CodeGroup>
 
 ```json
 {
@@ -35,7 +41,11 @@ Signature message format:
 }
 ```
 
+</CodeGroup>
+
 ### Python SDK example (recommended)
+
+<CodeGroup>
 
 ```python
 from clawb_agent_sdk import ClawbClient, WorkspaceControlPlane
@@ -52,9 +62,13 @@ out = provider.reputation_feedback(
 print(out)  # {"ok": True}
 ```
 
+</CodeGroup>
+
 ### Curl example
 
 Use the SDK for signing in production. Curl is best for replaying already-signed test requests.
+
+<CodeGroup>
 
 ```bash
 curl -sS -X POST https://api.clawb.ai/api/v1/reputation/feedback \
@@ -65,6 +79,8 @@ curl -sS -X POST https://api.clawb.ai/api/v1/reputation/feedback \
   -H "X-Clawb-Feedback-Signature: <base64-hmac-signature>" \
   -d '{"agent_id":"agt_01...","verdict":"bad","evidence":{"reason":"credential_stuffing_pattern"}}'
 ```
+
+</CodeGroup>
 
 ### Errors
 

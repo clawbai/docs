@@ -25,10 +25,14 @@ import SnippetIntro from '/snippets/snippet-intro.mdx';
    locations. Optionally, you can add variables that can be filled in via props
    when you import the snippet.
 
+<CodeGroup>
+
 ```mdx snippets/my-snippet.mdx
 Hello world! This is my content I want to reuse across pages. My keyword of the
 day is {word}.
 ```
+
+</CodeGroup>
 
 <Warning>
   The content that you want to reuse must be inside the `snippets` directory in
@@ -36,6 +40,8 @@ day is {word}.
 </Warning>
 
 2. Import the snippet into your destination file.
+
+<CodeGroup>
 
 ```mdx destination-file.mdx
 ---
@@ -51,6 +57,8 @@ Lorem impsum dolor sit amet.
 
 <MySnippet word="bananas" />
 ```
+
+</CodeGroup>
 
 ### Reusable variables
 
@@ -84,6 +92,8 @@ Hello, my name is {myName} and I like {myObject.fruit}.
 1. Inside your snippet file, create a component that takes in props by exporting
    your component in the form of an arrow function.
 
+<CodeGroup>
+
 ```mdx snippets/custom-component.mdx
 export const MyComponent = ({ title }) => (
   <div>
@@ -93,12 +103,16 @@ export const MyComponent = ({ title }) => (
 );
 ```
 
+</CodeGroup>
+
 <Warning>
   MDX does not compile inside the body of an arrow function. Stick to HTML
   syntax when you can or use a default export if you need to use MDX.
 </Warning>
 
 2. Import the snippet into your destination file and pass in the props
+
+<CodeGroup>
 
 ```mdx destination-file.mdx
 ---
@@ -112,3 +126,5 @@ Lorem ipsum dolor sit amet.
 
 <MyComponent title={'Custom title'} />
 ```
+
+</CodeGroup>

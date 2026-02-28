@@ -13,6 +13,8 @@ This document maps the current Clawb system architecture from the codebase.
 
 ## 1) System Context
 
+<CodeGroup>
+
 ```mermaid
 flowchart LR
   subgraph Human Boundary
@@ -56,6 +58,8 @@ flowchart LR
   API --> EXT
 ```
 
+</CodeGroup>
+
 ### Auth and trust boundaries
 
 | Caller | Main auth mode | Primary endpoints |
@@ -66,6 +70,8 @@ flowchart LR
 | Public approval links | Opaque one-time tokens | `/v1/approval-links/*`, `/v1/agent-approval/*`, `/v1/policy-challenges/*` |
 
 ## 2) End-to-End Decision Loop (Verify + Policy)
+
+<CodeGroup>
 
 ```mermaid
 sequenceDiagram
@@ -93,7 +99,11 @@ sequenceDiagram
   end
 ```
 
+</CodeGroup>
+
 ## 3) Vault + JWT Credential Path
+
+<CodeGroup>
 
 ```mermaid
 sequenceDiagram
@@ -120,7 +130,11 @@ sequenceDiagram
   Note over Clawb: Revocation + kill switch can pause minting\nor revoke credential windows quickly.
 ```
 
+</CodeGroup>
+
 ## 4) Control Plane Domains
+
+<CodeGroup>
 
 ```mermaid
 flowchart TD
@@ -164,7 +178,11 @@ flowchart TD
   end
 ```
 
+</CodeGroup>
+
 ## 5) Core Data Model Topology
+
+<CodeGroup>
 
 ```mermaid
 erDiagram
@@ -183,3 +201,5 @@ erDiagram
   WORKSPACE ||--o{ STATUS_COMPONENT : monitors
   STATUS_COMPONENT ||--o{ STATUS_CHECK : records
 ```
+
+</CodeGroup>

@@ -11,6 +11,8 @@ At request time, answer two questions:
 
 ## Auth quick reference
 
+<CodeGroup>
+
 ```http
 # Preferred
 X-Clawb-Api-Key: ck_live_...
@@ -19,12 +21,16 @@ X-Clawb-Api-Key: ck_live_...
 Authorization: Bearer ck_live_...
 ```
 
+</CodeGroup>
+
 ## Request-time flow
 
 ### Step 1: verify identity
 
 - Option A (recommended): local Ed25519 verification
 - Option B: online verification with `POST /v1/verify`
+
+<CodeGroup>
 
 ```bash
 curl -sS -X POST "https://api.clawb.ai/api/v1/verify" \
@@ -41,9 +47,13 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/verify" \
   }'
 ```
 
+</CodeGroup>
+
 ### Step 2: enforce policy
 
 Call `POST /v1/check` with `agent_id`, `policy_id`, `action`, and optional context.
+
+<CodeGroup>
 
 ```bash
 curl -sS -X POST "https://api.clawb.ai/api/v1/check" \
@@ -56,6 +66,8 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/check" \
     "context": {"amount": 49.0, "currency": "USD"}
   }'
 ```
+
+</CodeGroup>
 
 Possible decisions: `allow`, `challenge`, `deny`.
 

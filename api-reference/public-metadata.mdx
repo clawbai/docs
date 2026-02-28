@@ -15,11 +15,17 @@ No auth required.
 
 ### Curl example
 
+<CodeGroup>
+
 ```bash
 curl -sS https://api.clawb.ai/api/.well-known/openid-configuration
 ```
 
+</CodeGroup>
+
 ### Example response
+
+<CodeGroup>
 
 ```json
 {
@@ -31,6 +37,8 @@ curl -sS https://api.clawb.ai/api/.well-known/openid-configuration
 }
 ```
 
+</CodeGroup>
+
 ## GET `/.well-known/jwks.json`
 
 Canonical JWKS endpoint that returns active and previous issuer public keys in JWK format.
@@ -41,11 +49,17 @@ No auth required.
 
 ### Curl example
 
+<CodeGroup>
+
 ```bash
 curl -sS https://api.clawb.ai/api/.well-known/jwks.json
 ```
 
+</CodeGroup>
+
 ### Example response
+
+<CodeGroup>
 
 ```json
 {
@@ -62,11 +76,15 @@ curl -sS https://api.clawb.ai/api/.well-known/jwks.json
 }
 ```
 
+</CodeGroup>
+
 ## GET `/.well-known/clawb/jwks.json`
 
 Back-compat alias for older integrations. Returns the same payload as `/.well-known/jwks.json`.
 
 ## Python SDK example
+
+<CodeGroup>
 
 ```python
 from clawb_agent_sdk import ClawbClient
@@ -83,6 +101,8 @@ print("jwks_uri:", cfg["jwks_uri"])
 jwks = client.well_known_jwks()
 print("num_keys:", len(jwks.get("keys", [])))
 ```
+
+</CodeGroup>
 
 ## Operational notes
 

@@ -12,6 +12,8 @@ Clawb can act as a **backend enforcement point** for email sending:
 <Info>
   **Auth quick reference**
 
+<CodeGroup>
+
   ```http
   # Preferred
   X-Clawb-Api-Key: ck_live_9f2b3c4d5e6f7a8b
@@ -19,6 +21,8 @@ Clawb can act as a **backend enforcement point** for email sending:
   # Alternative
   Authorization: Bearer ck_live_9f2b3c4d5e6f7a8b
   ```
+
+</CodeGroup>
 
   Use provider keys with the `ck_live_` or `ck_test_` prefix.
 </Info>
@@ -105,6 +109,8 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/email/send" \
 
 ### Response
 
+<CodeGroup>
+
 ```json
 {
   "ok": true,
@@ -113,9 +119,13 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/email/send" \
 }
 ```
 
+</CodeGroup>
+
 ### Blocked sends
 
 If policy evaluation denies or challenges, `/v1/email/send` returns **403** with a stable payload:
+
+<CodeGroup>
 
 ```json
 {
@@ -125,3 +135,5 @@ If policy evaluation denies or challenges, `/v1/email/send` returns **403** with
   "challenge": {"type": "...", "url": "..."}
 }
 ```
+
+</CodeGroup>

@@ -6,6 +6,8 @@ This page describes workspace-facing verification and feedback APIs.
 
 ## Workspace auth
 
+<CodeGroup>
+
 ```http
 # Preferred
 X-Clawb-Api-Key: ck_live_...
@@ -14,17 +16,25 @@ X-Clawb-Api-Key: ck_live_...
 Authorization: Bearer ck_live_...
 ```
 
+</CodeGroup>
+
 ## POST `/v1/verify`
 
 Online identity verification for signed agent requests.
 
 ### Canonical format
 
+<CodeGroup>
+
 ```text
 METHOD\nPATH\nTIMESTAMP_MS\nNONCE\nBODY_SHA256
 ```
 
+</CodeGroup>
+
 ### Request
+
+<CodeGroup>
 
 ```json
 {
@@ -38,7 +48,11 @@ METHOD\nPATH\nTIMESTAMP_MS\nNONCE\nBODY_SHA256
 }
 ```
 
+</CodeGroup>
+
 ### curl
+
+<CodeGroup>
 
 ```bash
 curl -sS -X POST "https://api.clawb.ai/api/v1/verify" \
@@ -55,7 +69,11 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/verify" \
   }'
 ```
 
+</CodeGroup>
+
 ### Response
+
+<CodeGroup>
 
 ```json
 {
@@ -67,6 +85,8 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/verify" \
   "disclosure": {"disclosed": {}}
 }
 ```
+
+</CodeGroup>
 
 ## POST `/v1/reputation/feedback`
 
@@ -80,11 +100,17 @@ Workspace feedback with required HMAC signature headers.
 
 ### Signature message
 
+<CodeGroup>
+
 ```text
 {timestamp_ms}\n{nonce}\n{sha256(body)}
 ```
 
+</CodeGroup>
+
 ### curl
+
+<CodeGroup>
 
 ```bash
 curl -sS -X POST "https://api.clawb.ai/api/v1/reputation/feedback" \
@@ -99,6 +125,8 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/reputation/feedback" \
     "evidence": {"reason": "abuse_suspected"}
   }'
 ```
+
+</CodeGroup>
 
 ## Related docs
 

@@ -15,9 +15,13 @@ icon: 'image'
 
 The [markdown syntax](https://www.markdownguide.org/basic-syntax/#images) lets you add images using the following code
 
+<CodeGroup>
+
 ```md
 ![title](/path/image.jpg)
 ```
+
+</CodeGroup>
 
 Note that the image file size must be less than 5MB. Otherwise, we recommend hosting on a service like [Cloudinary](https://cloudinary.com/) or [S3](https://aws.amazon.com/s3/). You can then use that URL and embed.
 
@@ -25,9 +29,13 @@ Note that the image file size must be less than 5MB. Otherwise, we recommend hos
 
 To get more customizability with images, you can also use [embeds](/writing-content/embed) to add images
 
+<CodeGroup>
+
 ```html
 <img height="200" src="/path/image.jpg" />
 ```
+
+</CodeGroup>
 
 ## Embeds and HTML elements
 
@@ -54,6 +62,10 @@ Mintlify supports [HTML tags in Markdown](https://www.markdownguide.org/basic-sy
 
 Loads another HTML page within the document. Most commonly used for embedding videos.
 
+<CodeGroup>
+
 ```html
 <iframe src="https://www.youtube.com/embed/4KzFe50RQkQ"> </iframe>
 ```
+
+</CodeGroup>

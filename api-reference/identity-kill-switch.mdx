@@ -11,6 +11,8 @@ Pause or resume minting.
 
 ### Request
 
+<CodeGroup>
+
 ```json
 {
   "paused": true,
@@ -18,7 +20,11 @@ Pause or resume minting.
 }
 ```
 
+</CodeGroup>
+
 ### curl
+
+<CodeGroup>
 
 ```bash
 curl -sS -X POST "https://api.clawb.ai/api/v1/identity/kill-switch/minting" \
@@ -27,7 +33,11 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/identity/kill-switch/minting" \
   -d '{"paused": true, "reason": "incident INC-123"}'
 ```
 
+</CodeGroup>
+
 ### Python SDK
+
+<CodeGroup>
 
 ```python
 # Pause all minting in this workspace.
@@ -36,6 +46,8 @@ provider.identity_kill_switch_minting(paused=True, reason="incident INC-123")
 # Resume after remediation.
 provider.identity_kill_switch_minting(paused=False, reason="incident closed")
 ```
+
+</CodeGroup>
 
 ## POST `/v1/identity/kill-switch/revoke-all`
 
