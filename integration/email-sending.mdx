@@ -64,6 +64,25 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/check" \
   }'
 ```
 
+```python Python SDK
+from clawb_agent_sdk import ClawbClient, WorkspaceControlPlane
+
+client = ClawbClient(base_url="https://api.clawb.ai/api")
+control_plane = WorkspaceControlPlane(client=client, api_key="ck_live_9f2b3c4d5e6f7a8b")
+
+decision = control_plane.check(
+    agent_id="agt_...",
+    policy_id="pol_email",
+    action="send_email",
+    email={
+        "to": ["user@example.com"],
+        "subject": "Your receipt",
+        "attachments": [],
+    },
+)
+print(decision)
+```
+
 </CodeGroup>
 
 ## Step 2 — Send (only if allowed)
@@ -103,6 +122,28 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/email/send" \
       "html": "<p>Thanks for your purchase!</p>"
     }
   }'
+```
+
+```python Python SDK
+from clawb_agent_sdk import ClawbClient
+
+client = ClawbClient(base_url="https://api.clawb.ai/api")
+
+send_out = client.post(
+    "/v1/email/send",
+    headers={"X-Clawb-Api-Key": "ck_live_9f2b3c4d5e6f7a8b"},
+    json={
+        "agent_id": "agt_...",
+        "policy_id": "pol_email",
+        "email": {
+            "to": ["user@example.com"],
+            "subject": "Your receipt",
+            "text": "Thanks for your purchase!",
+            "html": "<p>Thanks for your purchase!</p>",
+        },
+    },
+)
+print(send_out)
 ```
 
 </CodeGroup>
