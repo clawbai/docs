@@ -33,14 +33,6 @@ Call `POST /v1/agents/register` with your agent’s public key.
 Clawb returns:
 <CodeGroup>
 
-```json JSON
-{
-  "agent_id": "agt_...",
-  "challenge_id": "ch_...",
-  "challenge": "<base64>"
-}
-```
-
 ```bash curl
 curl -sS -X POST "https://api.clawb.ai/api/v1/agents/register" \
   -H "Content-Type: application/json" \
@@ -65,6 +57,21 @@ print(register_out)
 
 </CodeGroup>
 
+Response:
+
+<CodeGroup>
+
+```json JSON
+{
+  "agent_id": "agt_...",
+  "challenge_id": "ch_...",
+  "challenge": "<base64-challenge>"
+}
+```
+
+</CodeGroup>
+
+
 ### 2) Decode the challenge (base64 → bytes)
 The challenge is shown as **base64** because JSON can’t safely carry raw bytes.
 
@@ -73,7 +80,7 @@ The challenge is shown as **base64** because JSON can’t safely carry raw bytes
 Conceptually:
 <CodeGroup>
 
-```text Text
+```python Python SDK
 challenge_bytes = base64_decode(challenge)
 ```
 
@@ -82,7 +89,7 @@ challenge_bytes = base64_decode(challenge)
 ### 3) Sign the decoded bytes with Ed25519
 <CodeGroup>
 
-```text Text
+```python Python SDK
 signature_bytes = ed25519_sign(private_key, challenge_bytes)
 signature = base64_encode(signature_bytes)
 ```
@@ -94,19 +101,6 @@ Ed25519 signatures are always **64 bytes**.
 ### 4) Submit the signature
 Call `POST /v1/agents/attest`:
 <CodeGroup>
-
-```json JSON
-{
-  "agent_id": "agt_...",
-  "challenge_id": "ch_...",
-  "signature": "<base64-signature>"
-}
-
-
-If everything is correct, Clawb responds with:
-
-{ "agent_id": "agt_...", "status": "active" }
-```
 
 ```bash curl
 curl -sS -X POST "https://api.clawb.ai/api/v1/agents/attest" \
@@ -131,6 +125,16 @@ agent_client.attest(
     challenge_id="ch_...",
     challenge_b64="<challenge_base64>",
 )
+```
+
+</CodeGroup>
+
+If everything is correct, Clawb responds with:
+
+<CodeGroup>
+
+```json JSON
+{ "agent_id": "agt_...", "status": "active" }
 ```
 
 </CodeGroup>
@@ -162,7 +166,7 @@ So:
 
 ---
 
-## Attestation examples (Node, Python, Go, Rust)
+## Attestation examples (Node, Python, Go)
 
 ### Key format note
 If you copied the private key from the dashboard and it says something like **“PKCS8 base64”**, that usually means:
@@ -207,17 +211,11 @@ console.log({ agent_id, challenge_id, signature: signature_b64 });
 // 5) POST signature_b64 to /v1/agents/attest
 ```
 
-</CodeGroup>
+```py Python SDK
 
 ### Python (`cryptography`)
-Install:
-<CodeGroup>
+# Install: pip install cryptography
 
-```bash bash
-pip install cryptography
-```
-
-```py Python SDK
 import base64
 from cryptography.hazmat.primitives import serialization
 
@@ -249,12 +247,9 @@ print({
 # 5) POST signature_b64 to /v1/agents/attest
 ```
 
-</CodeGroup>
-
-### Go (standard library)
-<CodeGroup>
-
 ```go Go
+### Go (standard library)
+
 package main
 
 import (
@@ -296,51 +291,6 @@ func main() {
 	signatureB64 := base64.StdEncoding.EncodeToString(sig)
 
 	fmt.Printf("agent_id=%s\nchallenge_id=%s\nsignature=%s\n", agentID, challengeID, signatureB64)
-}
-```
-
-</CodeGroup>
-
-### Rust (`ed25519-dalek` + `pkcs8`)
-`Cargo.toml`:
-<CodeGroup>
-
-```toml TOML
-[dependencies]
-base64 = "0.22"
-ed25519-dalek = { version = "2", features = ["pkcs8"] }
-pkcs8 = "0.10"
-```
-
-```rust Rust
-use base64::{engine::general_purpose, Engine as _};
-use ed25519_dalek::{Signer, SigningKey};
-use pkcs8::DecodePrivateKey;
-
-fn main() {
-    let agent_id = "agt_...";
-    let challenge_id = "ch_...";
-
-    let challenge_b64 = "<challenge_base64>";
-    let priv_pkcs8_b64 = "<private_key_pkcs8_base64>";
-
-    let challenge_bytes = general_purpose::STANDARD
-        .decode(challenge_b64)
-        .expect("bad base64 challenge");
-
-    let priv_der = general_purpose::STANDARD
-        .decode(priv_pkcs8_b64)
-        .expect("bad base64 private key");
-
-    let signing_key = SigningKey::from_pkcs8_der(&priv_der)
-        .expect("failed to parse PKCS8 ed25519 private key");
-
-    let signature = signing_key.sign(&challenge_bytes);
-    let signature_b64 = general_purpose::STANDARD.encode(signature.to_bytes());
-
-    println!("agent_id={}", agent_id);
-    println!("challenge_id={}", challenge_id);
-    println!("signature={}", signature_b64);
 }
 ```
 

@@ -55,33 +55,6 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/check" \
   }'
 ```
 
-</CodeGroup>
-
-## Response
-
-<CodeGroup>
-
-```json JSON
-{
-  "decision": "allow",
-  "confidence": 0.9,
-  "reasons": ["agent_key_attested"]
-}
-
-When challenged:
-
-{
-  "decision": "challenge",
-  "challenge": {"type": "attest", "url": "..."}
-}
-```
-
-</CodeGroup>
-
-## Python SDK example
-
-<CodeGroup>
-
 ```python Python SDK
 from clawb_agent_sdk import ClawbClient, WorkspaceControlPlane
 
@@ -107,6 +80,35 @@ else:
 ```
 
 </CodeGroup>
+
+## Response
+
+<CodeGroup>
+
+```json JSON
+{
+  "decision": "allow",
+  "confidence": 0.9,
+  "reasons": ["agent_key_attested"]
+}
+```
+
+</CodeGroup>
+
+
+When challenged:
+
+<CodeGroup>
+
+```json JSON
+{
+  "decision": "challenge",
+  "challenge": {"type": "attest", "url": "..."}
+}
+```
+
+</CodeGroup>
+
 
 ## Related docs
 
