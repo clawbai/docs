@@ -38,6 +38,30 @@ print(events)
 
 </CodeGroup>
 
+### Example response
+
+<CodeGroup>
+
+```json JSON
+{
+  "ok": true,
+  "items": [
+    {
+      "event_id": "evt_01...",
+      "created_at": "2026-02-28T00:00:00Z",
+      "agent_id": "agt_123",
+      "action": "refund",
+      "decision": "deny",
+      "trace_id": "trc_abc123",
+      "policy_id": "pol_refunds_v2"
+    }
+  ],
+  "next_cursor": "cur_01..."
+}
+```
+
+</CodeGroup>
+
 ## POST `/v1/workspace/audit/export`
 
 Exports events as JSON or CSV.
@@ -74,6 +98,36 @@ export_out = control_plane.workspace_audit_export(
     limit=1000,
 )
 print(export_out)
+```
+
+```bash curl
+curl -sS -X POST "https://api.clawb.ai/api/v1/workspace/audit/export" \
+  -H "Content-Type: application/json" \
+  -H "X-Clawb-Api-Key: ck_live_replace_me" \
+  -d '{
+    "format": "csv",
+    "filters": {
+      "start_ms": 1739952000000,
+      "end_ms": 1740038399000,
+      "decision": "deny"
+    },
+    "limit": 1000
+  }'
+```
+
+</CodeGroup>
+
+### Example response
+
+<CodeGroup>
+
+```json JSON
+{
+  "ok": true,
+  "format": "csv",
+  "count": 128,
+  "csv": "event_id,created_at,agent_id,action,decision\n..."
+}
 ```
 
 </CodeGroup>

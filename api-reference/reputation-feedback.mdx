@@ -57,6 +57,20 @@ curl -sS -X POST https://api.clawb.ai/api/v1/reputation/feedback \
 
 </CodeGroup>
 
+### Example response
+
+<CodeGroup>
+
+```json JSON
+{
+  "ok": true,
+  "accepted": true,
+  "received_at": "2026-02-28T00:00:00Z"
+}
+```
+
+</CodeGroup>
+
 ### Errors
 
 - `401 {"error":"missing_api_key"|"missing_signature_headers"|"bad_signature"|"replay_detected"}`
