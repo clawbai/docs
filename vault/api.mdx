@@ -49,7 +49,7 @@ Fields (conceptual):
 
 <CodeGroup>
 
-```http
+```http HTTP
 POST /v1/vault/secret-sets
 Content-Type: application/json
 
@@ -64,7 +64,7 @@ Content-Type: application/json
 }
 ```
 
-```bash
+```bash curl
 curl -sS -X POST "https://api.clawb.ai/api/v1/vault/secret-sets" \
   -H "Content-Type: application/json" \
   -H "X-Clawb-Api-Key: ck_live_replace_me" \
@@ -112,7 +112,7 @@ Notes:
 
 <CodeGroup>
 
-```http
+```http HTTP
 POST /v1/vault/secret-sets/import
 Content-Type: application/json
 
@@ -124,7 +124,7 @@ Content-Type: application/json
 }
 ```
 
-```bash
+```bash curl
 curl -sS -X POST "https://api.clawb.ai/api/v1/vault/secret-sets/import" \
   -H "Content-Type: application/json" \
   -H "X-Clawb-Api-Key: ck_live_replace_me" \
@@ -162,7 +162,7 @@ print(import_out)
 
 <CodeGroup>
 
-```http
+```http HTTP
 POST /v1/vault/grants
 Content-Type: application/json
 
@@ -175,7 +175,7 @@ Content-Type: application/json
 }
 ```
 
-```bash
+```bash curl
 curl -sS -X POST "https://api.clawb.ai/api/v1/vault/grants" \
   -H "Content-Type: application/json" \
   -H "X-Clawb-Api-Key: ck_live_replace_me" \
@@ -219,7 +219,7 @@ Recommended default:
 
 <CodeGroup>
 
-```http
+```http HTTP
 POST /v1/vault/leases
 Content-Type: application/json
 
@@ -232,7 +232,7 @@ Content-Type: application/json
 }
 ```
 
-```bash
+```bash curl
 curl -sS -X POST "https://api.clawb.ai/api/v1/vault/leases" \
   -H "Content-Type: application/json" \
   -H "X-Clawb-Api-Key: ck_live_replace_me" \
@@ -274,7 +274,7 @@ A generic proxy endpoint can forward requests while injecting secrets.
 
 <CodeGroup>
 
-```http
+```http HTTP
 POST /v1/vault/proxy
 Content-Type: application/json
 
@@ -296,7 +296,7 @@ Content-Type: application/json
 }
 ```
 
-```bash
+```bash curl
 curl -sS -X POST "https://api.clawb.ai/api/v1/vault/proxy" \
   -H "Content-Type: application/json" \
   -H "X-Clawb-Api-Key: ck_live_replace_me" \
@@ -355,11 +355,11 @@ Vault should expose audit logs (admin-only):
 
 <CodeGroup>
 
-```http
+```http HTTP
 GET /v1/vault/audit?secret_set_id=ss_456&limit=50
 ```
 
-```bash
+```bash curl
 curl -sS "https://api.clawb.ai/api/v1/vault/audit?secret_set_id=ss_456&limit=50" \
   -H "X-Clawb-Api-Key: ck_live_replace_me"
 ```

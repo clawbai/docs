@@ -82,7 +82,7 @@ Python SDK:
 
 <CodeGroup>
 
-```python
+```python Python SDK
 decision = control_plane.check(
     agent_id=agent_id,
     policy_id="pol_refunds_v2",
@@ -93,7 +93,7 @@ decision = control_plane.check(
 
 curl:
 
-```bash
+```bash curl
 curl -sS -X POST "https://api.clawb.ai/api/v1/check" \
   -H "Content-Type: application/json" \
   -H "X-Clawb-Api-Key: ck_live_replace_me" \
@@ -122,7 +122,7 @@ Python SDK:
 
 <CodeGroup>
 
-```python
+```python Python SDK
 mint = control_plane.identity_credentials_mint(
     agent_id=agent_id,
     provider="payments",
@@ -135,7 +135,7 @@ mint = control_plane.identity_credentials_mint(
 
 curl:
 
-```bash
+```bash curl
 curl -sS -X POST "https://api.clawb.ai/api/v1/identity/credentials/mint" \
   -H "Content-Type: application/json" \
   -H "X-Clawb-Api-Key: ck_live_replace_me" \
@@ -168,11 +168,11 @@ Query recent events:
 
 <CodeGroup>
 
-```python
+```python Python SDK
 audit = control_plane.workspace_audit_events(agent_id=agent_id, limit=20)
 ```
 
-```bash
+```bash curl
 curl -sS "https://api.clawb.ai/api/v1/workspace/audit/events?agent_id=agt_replace_me&limit=20" \
   -H "X-Clawb-Api-Key: ck_live_replace_me"
 ```
@@ -187,12 +187,12 @@ If compromise is suspected, pause minting and revoke active credentials:
 
 <CodeGroup>
 
-```python
+```python Python SDK
 control_plane.identity_kill_switch_minting(paused=True, reason="incident INC-404")
 control_plane.identity_kill_switch_revoke_all(reason="incident INC-404")
 ```
 
-```bash
+```bash curl
 curl -sS -X POST "https://api.clawb.ai/api/v1/identity/kill-switch/minting" \
   -H "Content-Type: application/json" \
   -H "X-Clawb-Api-Key: ck_live_replace_me" \
@@ -212,7 +212,7 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/identity/kill-switch/revoke-all" \
 
 <CodeGroup>
 
-```python
+```python Python SDK
 if not verify_result.get("valid"):
     return {"status": 401, "error": "invalid_signature"}
 

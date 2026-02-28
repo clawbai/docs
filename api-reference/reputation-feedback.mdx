@@ -20,7 +20,7 @@ Signature message format:
 
 <CodeGroup>
 
-```text
+```text Text
 {timestamp_ms}\n{nonce}\n{sha256(body)}
 ```
 
@@ -30,7 +30,7 @@ Signature message format:
 
 <CodeGroup>
 
-```json
+```json JSON
 {
   "agent_id": "agt_01...",
   "verdict": "bad",
@@ -47,7 +47,7 @@ Signature message format:
 
 <CodeGroup>
 
-```python
+```python Python SDK
 from clawb_agent_sdk import ClawbClient, WorkspaceControlPlane
 
 client = ClawbClient(base_url="https://api.clawb.ai/api")
@@ -70,7 +70,7 @@ Use the SDK for signing in production. Curl is best for replaying already-signed
 
 <CodeGroup>
 
-```bash
+```bash curl
 curl -sS -X POST https://api.clawb.ai/api/v1/reputation/feedback \
   -H "Content-Type: application/json" \
   -H "X-Clawb-Api-Key: ck_live_..." \

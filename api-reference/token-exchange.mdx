@@ -15,7 +15,7 @@ Workspace API key (same auth model as `/v1/check`).
 
 <CodeGroup>
 
-```json
+```json JSON
 {
   "agent_id": "agt_...",
   "audience": "aws",
@@ -38,7 +38,7 @@ Workspace API key (same auth model as `/v1/check`).
 
 <CodeGroup>
 
-```bash
+```bash curl
 curl -sS -X POST https://api.clawb.ai/api/v1/token/exchange \
   -H "Content-Type: application/json" \
   -H "X-Clawb-Api-Key: ck_live_replace_me" \
@@ -90,7 +90,7 @@ print(exchange_out)
 
 <CodeGroup>
 
-```json
+```json JSON
 {
   "ok": true,
   "token": "<jwt>",

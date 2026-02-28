@@ -15,7 +15,7 @@ Agent-signed request.
 
 <CodeGroup>
 
-```json
+```json JSON
 {
   "agent_id": "agt_01...",
   "status": "ok",
@@ -29,7 +29,7 @@ Agent-signed request.
 
 <CodeGroup>
 
-```bash
+```bash curl
 curl -sS -X POST "https://api.clawb.ai/api/v1/telemetry/heartbeat" \
   -H "Content-Type: application/json" \
   -H "X-Clawb-Agent-Id: agt_01..." \
@@ -45,7 +45,7 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/telemetry/heartbeat" \
 
 <CodeGroup>
 
-```python
+```python Python SDK
 from clawb_agent_sdk import ClawbClient
 
 agent_client = ClawbClient(
@@ -79,7 +79,7 @@ Quick query example:
 
 <CodeGroup>
 
-```bash
+```bash curl
 curl -sS "https://api.clawb.ai/api/v1/telemetry/heartbeat/recent?agent_id=agt_01...&limit=20" \
   -H "X-Clawb-Api-Key: ck_live_replace_me"
 ```

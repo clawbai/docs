@@ -21,7 +21,7 @@ Dashboard user session auth (not workspace API key).
 
 <CodeGroup>
 
-```json
+```json JSON
 {
   "policy_id": "pol_enterprise_sync",
   "policy_name": "Enterprise Policy Sync",
@@ -44,7 +44,7 @@ You can set `Idempotency-Key` header to make repeated CI retries safe.
 
 <CodeGroup>
 
-```http
+```http HTTP
 Idempotency-Key: deploy-2026-02-21-001
 ```
 
@@ -54,7 +54,7 @@ Idempotency-Key: deploy-2026-02-21-001
 
 <CodeGroup>
 
-```bash
+```bash curl
 curl -sS -X POST https://api.clawb.ai/api/v1/policies/sync \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: deploy-2026-02-21-001" \
@@ -91,7 +91,7 @@ print(sync_out)
 
 <CodeGroup>
 
-```json
+```json JSON
 {
   "ok": true,
   "dry_run": true,
@@ -104,7 +104,7 @@ print(sync_out)
 
 - Conflict:
 
-```json
+```json JSON
 {
   "error": "sync_conflict",
   "current_policy_hash": "..."
