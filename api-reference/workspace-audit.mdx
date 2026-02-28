@@ -23,7 +23,7 @@ Returns workspace-scoped audit items.
 
 <CodeGroup>
 
-```bash
+```bash curl
 curl -sS "https://api.clawb.ai/api/v1/workspace/audit/events?agent_id=agt_123&limit=100" \
   -H "X-Clawb-Api-Key: ck_live_..."
 ```
@@ -48,7 +48,7 @@ Exports events as JSON or CSV.
 
 <CodeGroup>
 
-```json
+```json JSON
 {
   "format": "csv",
   "filters": {

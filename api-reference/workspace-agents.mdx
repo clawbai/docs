@@ -15,7 +15,7 @@ Workspace API key required.
 
 <CodeGroup>
 
-```http
+```http HTTP
 X-Clawb-Api-Key: ck_live_...
 ```
 
@@ -25,7 +25,7 @@ X-Clawb-Api-Key: ck_live_...
 
 <CodeGroup>
 
-```json
+```json JSON
 {
   "external_agent_key": "internal:payments-bot",
   "agent_id": "agt_01jv2fsk4mv9mtr9j3m7h6qk6y",
@@ -43,7 +43,7 @@ X-Clawb-Api-Key: ck_live_...
 
 <CodeGroup>
 
-```bash
+```bash curl
 curl -sS -X POST "https://api.clawb.ai/api/v1/workspace/agents/upsert" \
   -H "Content-Type: application/json" \
   -H "X-Clawb-Api-Key: ck_live_..." \

@@ -8,7 +8,7 @@ This page describes workspace-facing verification and feedback APIs.
 
 <CodeGroup>
 
-```http
+```http HTTP
 # Preferred
 X-Clawb-Api-Key: ck_live_...
 
@@ -26,7 +26,7 @@ Online identity verification for signed agent requests.
 
 <CodeGroup>
 
-```text
+```text Text
 METHOD\nPATH\nTIMESTAMP_MS\nNONCE\nBODY_SHA256
 ```
 
@@ -36,7 +36,7 @@ METHOD\nPATH\nTIMESTAMP_MS\nNONCE\nBODY_SHA256
 
 <CodeGroup>
 
-```json
+```json JSON
 {
   "agent_id": "agt_...",
   "method": "POST",
@@ -54,7 +54,7 @@ METHOD\nPATH\nTIMESTAMP_MS\nNONCE\nBODY_SHA256
 
 <CodeGroup>
 
-```bash
+```bash curl
 curl -sS -X POST "https://api.clawb.ai/api/v1/verify" \
   -H "Content-Type: application/json" \
   -H "X-Clawb-Api-Key: ck_live_replace_me" \
@@ -93,7 +93,7 @@ print(verify)
 
 <CodeGroup>
 
-```json
+```json JSON
 {
   "valid": true,
   "agent_id": "agt_...",
@@ -120,7 +120,7 @@ Workspace feedback with required HMAC signature headers.
 
 <CodeGroup>
 
-```text
+```text Text
 {timestamp_ms}\n{nonce}\n{sha256(body)}
 ```
 
@@ -130,7 +130,7 @@ Workspace feedback with required HMAC signature headers.
 
 <CodeGroup>
 
-```bash
+```bash curl
 curl -sS -X POST "https://api.clawb.ai/api/v1/reputation/feedback" \
   -H "Content-Type: application/json" \
   -H "X-Clawb-Api-Key: ck_live_replace_me" \

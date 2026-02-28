@@ -17,7 +17,7 @@ No auth required.
 
 <CodeGroup>
 
-```bash
+```bash curl
 curl -sS https://api.clawb.ai/api/.well-known/openid-configuration
 ```
 
@@ -27,7 +27,7 @@ curl -sS https://api.clawb.ai/api/.well-known/openid-configuration
 
 <CodeGroup>
 
-```json
+```json JSON
 {
   "issuer": "https://api.clawb.ai/api",
   "jwks_uri": "https://api.clawb.ai/api/.well-known/jwks.json",
@@ -51,7 +51,7 @@ No auth required.
 
 <CodeGroup>
 
-```bash
+```bash curl
 curl -sS https://api.clawb.ai/api/.well-known/jwks.json
 ```
 
@@ -61,7 +61,7 @@ curl -sS https://api.clawb.ai/api/.well-known/jwks.json
 
 <CodeGroup>
 
-```json
+```json JSON
 {
   "keys": [
     {
@@ -86,7 +86,7 @@ Back-compat alias for older integrations. Returns the same payload as `/.well-kn
 
 <CodeGroup>
 
-```python
+```python Python SDK
 from clawb_agent_sdk import ClawbClient
 
 # This base URL must include /api.

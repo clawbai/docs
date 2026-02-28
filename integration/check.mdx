@@ -8,7 +8,7 @@ Your relying service should call `/v1/check` immediately before sensitive operat
 
 <CodeGroup>
 
-```http
+```http HTTP
 X-Clawb-Api-Key: ck_live_...
 ```
 
@@ -18,7 +18,7 @@ X-Clawb-Api-Key: ck_live_...
 
 <CodeGroup>
 
-```json
+```json JSON
 {
   "agent_id": "agt_...",
   "policy_id": "pol_default",
@@ -39,7 +39,7 @@ For `action: "send_email"`, include `email` object fields so policy constraints 
 
 <CodeGroup>
 
-```bash
+```bash curl
 curl -sS -X POST "https://api.clawb.ai/api/v1/check" \
   -H "Content-Type: application/json" \
   -H "X-Clawb-Api-Key: ck_live_replace_me" \
@@ -61,7 +61,7 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/check" \
 
 <CodeGroup>
 
-```json
+```json JSON
 {
   "decision": "allow",
   "confidence": 0.9,
@@ -71,7 +71,7 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/check" \
 
 When challenged:
 
-```json
+```json JSON
 {
   "decision": "challenge",
   "challenge": {"type": "attest", "url": "..."}
@@ -84,7 +84,7 @@ When challenged:
 
 <CodeGroup>
 
-```python
+```python Python SDK
 from clawb_agent_sdk import ClawbClient, WorkspaceControlPlane
 
 client = ClawbClient(base_url="https://api.clawb.ai/api")

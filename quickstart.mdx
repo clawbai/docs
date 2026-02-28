@@ -100,7 +100,7 @@ Raw HTTP:
 
 <CodeGroup>
 
-```http
+```http HTTP
 POST /v1/check
 Content-Type: application/json
 X-Clawb-Api-Key: ck_live_...
@@ -150,7 +150,7 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/check" \
 
 <CodeGroup>
 
-```python
+```python Python SDK
 decision_value = (decision.get("decision") or "").lower()
 
 if decision_value == "allow":

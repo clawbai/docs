@@ -13,7 +13,7 @@ Base URL used below:
 
 <CodeGroup>
 
-```text
+```text Text
 https://api.clawb.ai/api
 ```
 
@@ -23,7 +23,7 @@ https://api.clawb.ai/api
 
 <CodeGroup>
 
-```bash
+```bash bash
 pip install clawb-agent-sdk
 ```
 
@@ -33,7 +33,7 @@ pip install clawb-agent-sdk
 
 <CodeGroup>
 
-```python
+```python Python SDK
 from clawb_agent_sdk import ClawbClient, WorkspaceControlPlane
 
 BASE_URL = "https://api.clawb.ai/api"
@@ -54,7 +54,7 @@ control_plane = WorkspaceControlPlane(client=control_plane_client, api_key=WORKS
 
 <CodeGroup>
 
-```python
+```python Python SDK
 from clawb_agent_sdk import ClawbClient
 
 priv_b64, pub_b64 = ClawbClient.generate_ed25519_keypair_b64()
@@ -67,7 +67,7 @@ print(pub_b64)
 
 <CodeGroup>
 
-```python
+```python Python SDK
 client = ClawbClient(base_url=BASE_URL)
 reg = client.register(name="my-agent", public_key_b64=pub_b64)
 
@@ -90,7 +90,7 @@ agent_client.attest(
 
 <CodeGroup>
 
-```python
+```python Python SDK
 agent_client.post(
     "/v1/telemetry/heartbeat",
     json={"agent_id": reg["agent_id"], "status": "ok", "latency_ms": 72},
@@ -105,7 +105,7 @@ agent_client.post(
 
 <CodeGroup>
 
-```python
+```python Python SDK
 # Build verify payload from the original inbound request values.
 verify = control_plane.verify(
     agent_id="agt_01...",
@@ -121,7 +121,7 @@ print(verify)
 
 Raw API fallback (curl):
 
-```bash
+```bash curl
 curl -sS -X POST "https://api.clawb.ai/api/v1/verify" \
   -H "Content-Type: application/json" \
   -H "X-Clawb-Api-Key: ck_live_replace_me" \
@@ -142,7 +142,7 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/verify" \
 
 <CodeGroup>
 
-```python
+```python Python SDK
 decision = control_plane.check(
     agent_id="agt_01...",
     policy_id="pol_default",
@@ -160,7 +160,7 @@ print(decision)
 
 <CodeGroup>
 
-```python
+```python Python SDK
 control_plane.workspace_agents_upsert(
     external_agent_key="github:app:payments-bot",
     agent_id="agt_01...",
@@ -181,7 +181,7 @@ print(inventory.get("count"))
 
 <CodeGroup>
 
-```python
+```python Python SDK
 events = control_plane.workspace_audit_events(
     start_ms=1740137000000,
     end_ms=1740139999000,
@@ -204,7 +204,7 @@ print(len(csv_export.get("csv", "")))
 
 <CodeGroup>
 
-```python
+```python Python SDK
 mint = control_plane.identity_credentials_mint(
     agent_id="agt_01...",
     provider="sendgrid",
@@ -234,7 +234,7 @@ control_plane.identity_credentials_revoke_by_agent(
 
 <CodeGroup>
 
-```python
+```python Python SDK
 control_plane.identity_kill_switch_minting(paused=True, reason="incident INC-7")
 control_plane.identity_kill_switch_revoke_all(reason="credential compromise")
 print(control_plane.identity_kill_switch_status())
@@ -246,7 +246,7 @@ print(control_plane.identity_kill_switch_status())
 
 <CodeGroup>
 
-```python
+```python Python SDK
 # SDK automatically computes feedback signature headers.
 control_plane.reputation_feedback(
     agent_id="agt_01...",
@@ -261,7 +261,7 @@ control_plane.reputation_feedback(
 
 <CodeGroup>
 
-```python
+```python Python SDK
 cfg = control_plane_client.well_known_openid_configuration()
 jwks = control_plane_client.well_known_jwks()
 
@@ -275,7 +275,7 @@ print("keys:", len(jwks.get("keys", [])))
 
 <CodeGroup>
 
-```python
+```python Python SDK
 from clawb_agent_sdk import ClawbClient, ClawbIdentity, get_aws_credentials
 
 agent_client = ClawbClient(
@@ -311,7 +311,7 @@ print(creds["AccessKeyId"])
 
 Raw API fallback (curl):
 
-```bash
+```bash curl
 curl -sS -X POST "https://api.clawb.ai/api/v1/token/exchange" \
   -H "Content-Type: application/json" \
   -H "X-Clawb-Agent-Id: agt_01..." \

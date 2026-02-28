@@ -13,7 +13,7 @@ At request time, answer two questions:
 
 <CodeGroup>
 
-```http
+```http HTTP
 # Preferred
 X-Clawb-Api-Key: ck_live_...
 
@@ -32,7 +32,7 @@ Authorization: Bearer ck_live_...
 
 <CodeGroup>
 
-```bash
+```bash curl
 curl -sS -X POST "https://api.clawb.ai/api/v1/verify" \
   -H "Content-Type: application/json" \
   -H "X-Clawb-Api-Key: ck_live_replace_me" \
@@ -73,7 +73,7 @@ Call `POST /v1/check` with `agent_id`, `policy_id`, `action`, and optional conte
 
 <CodeGroup>
 
-```bash
+```bash curl
 curl -sS -X POST "https://api.clawb.ai/api/v1/check" \
   -H "Content-Type: application/json" \
   -H "X-Clawb-Api-Key: ck_live_replace_me" \

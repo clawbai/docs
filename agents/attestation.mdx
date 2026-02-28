@@ -33,7 +33,7 @@ Call `POST /v1/agents/register` with your agent’s public key.
 Clawb returns:
 <CodeGroup>
 
-```json
+```json JSON
 {
   "agent_id": "agt_...",
   "challenge_id": "ch_...",
@@ -43,7 +43,7 @@ Clawb returns:
 
 curl:
 
-```bash
+```bash curl
 curl -sS -X POST "https://api.clawb.ai/api/v1/agents/register" \
   -H "Content-Type: application/json" \
   -d '{
@@ -75,7 +75,7 @@ The challenge is shown as **base64** because JSON can’t safely carry raw bytes
 Conceptually:
 <CodeGroup>
 
-```text
+```text Text
 challenge_bytes = base64_decode(challenge)
 ```
 
@@ -84,7 +84,7 @@ challenge_bytes = base64_decode(challenge)
 ### 3) Sign the decoded bytes with Ed25519
 <CodeGroup>
 
-```text
+```text Text
 signature_bytes = ed25519_sign(private_key, challenge_bytes)
 signature = base64_encode(signature_bytes)
 ```
@@ -97,7 +97,7 @@ Ed25519 signatures are always **64 bytes**.
 Call `POST /v1/agents/attest`:
 <CodeGroup>
 
-```json
+```json JSON
 {
   "agent_id": "agt_...",
   "challenge_id": "ch_...",
@@ -106,13 +106,13 @@ Call `POST /v1/agents/attest`:
 ```
 
 If everything is correct, Clawb responds with:
-```json
+```json JSON
 { "agent_id": "agt_...", "status": "active" }
 ```
 
 curl:
 
-```bash
+```bash curl
 curl -sS -X POST "https://api.clawb.ai/api/v1/agents/attest" \
   -H "Content-Type: application/json" \
   -d '{
@@ -180,7 +180,7 @@ Each example below assumes:
 ### Node.js (built-in `crypto`)
 <CodeGroup>
 
-```js
+```js JavaScript
 import crypto from "crypto";
 
 const agent_id = "agt_...";
@@ -217,11 +217,11 @@ console.log({ agent_id, challenge_id, signature: signature_b64 });
 Install:
 <CodeGroup>
 
-```bash
+```bash bash
 pip install cryptography
 ```
 
-```py
+```py Python SDK
 import base64
 from cryptography.hazmat.primitives import serialization
 
@@ -258,7 +258,7 @@ print({
 ### Go (standard library)
 <CodeGroup>
 
-```go
+```go Go
 package main
 
 import (
@@ -309,14 +309,14 @@ func main() {
 `Cargo.toml`:
 <CodeGroup>
 
-```toml
+```toml TOML
 [dependencies]
 base64 = "0.22"
 ed25519-dalek = { version = "2", features = ["pkcs8"] }
 pkcs8 = "0.10"
 ```
 
-```rust
+```rust Rust
 use base64::{engine::general_purpose, Engine as _};
 use ed25519_dalek::{Signer, SigningKey};
 use pkcs8::DecodePrivateKey;
@@ -369,7 +369,7 @@ Build this string (newlines matter):
 
 <CodeGroup>
 
-```text
+```text Text
 METHOD\nPATH\nTIMESTAMP\nNONCE\nSHA256(body)
 ```
 

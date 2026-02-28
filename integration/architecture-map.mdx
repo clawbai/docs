@@ -15,7 +15,7 @@ This document maps the current Clawb system architecture from the codebase.
 
 <CodeGroup>
 
-```mermaid
+```mermaid Mermaid
 flowchart LR
   subgraph Human Boundary
     U[Enterprise operator]
@@ -73,7 +73,7 @@ flowchart LR
 
 <CodeGroup>
 
-```mermaid
+```mermaid Mermaid
 sequenceDiagram
   participant Agent
   participant Gateway as Enterprise Gateway
@@ -105,7 +105,7 @@ sequenceDiagram
 
 <CodeGroup>
 
-```mermaid
+```mermaid Mermaid
 sequenceDiagram
   participant Admin as Dashboard Admin
   participant Clawb as Clawb API
@@ -136,7 +136,7 @@ sequenceDiagram
 
 <CodeGroup>
 
-```mermaid
+```mermaid Mermaid
 flowchart TD
   subgraph Auth & Workspace
     L1[POST /auth/start-login] --> L2[Email magic link]
@@ -184,7 +184,7 @@ flowchart TD
 
 <CodeGroup>
 
-```mermaid
+```mermaid Mermaid
 erDiagram
   USER ||--o{ WORKSPACE : owns
   WORKSPACE ||--o{ AGENT : contains

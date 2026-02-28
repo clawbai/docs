@@ -25,7 +25,7 @@ This tutorial is for teams building secure enterprise agent operations.
 
 <CodeGroup>
 
-```python
+```python Python SDK
 from clawb_agent_sdk import ClawbClient, WorkspaceControlPlane
 
 BASE_URL = "https://api.clawb.ai/api"
@@ -41,7 +41,7 @@ control_plane = WorkspaceControlPlane(client=client, api_key=WORKSPACE_API_KEY)
 
 <CodeGroup>
 
-```python
+```python Python SDK
 mapping = control_plane.workspace_agents_upsert(
     external_agent_key="internal:payments-bot",
     agent_id="agt_01replace",
@@ -60,7 +60,7 @@ print(mapping)
 
 <CodeGroup>
 
-```python
+```python Python SDK
 mint = control_plane.identity_credentials_mint(
     agent_id="agt_01replace",
     provider="sendgrid",
@@ -79,7 +79,7 @@ print(mint["credential"]["cred_id"])
 
 <CodeGroup>
 
-```python
+```python Python SDK
 audit = control_plane.workspace_audit_events(limit=20)
 for event in audit.get("items", []):
     print(event["created_at"], event["event_type"], event.get("decision"))
@@ -91,7 +91,7 @@ for event in audit.get("items", []):
 
 <CodeGroup>
 
-```python
+```python Python SDK
 control_plane.identity_kill_switch_minting(paused=True, reason="incident INC-42")
 control_plane.identity_kill_switch_revoke_all(reason="incident INC-42")
 print(control_plane.identity_kill_switch_status())
@@ -103,7 +103,7 @@ print(control_plane.identity_kill_switch_status())
 
 <CodeGroup>
 
-```python
+```python Python SDK
 feedback = control_plane.reputation_feedback(
     agent_id="agt_01replace",
     verdict="bad",
@@ -118,14 +118,14 @@ print(feedback)
 
 <CodeGroup>
 
-```bash
+```bash curl
 curl -sS -X POST https://api.clawb.ai/api/v1/workspace/agents/upsert \
   -H "Content-Type: application/json" \
   -H "X-Clawb-Api-Key: ck_test_replace_me" \
   -d '{"external_agent_key":"internal:payments-bot","agent_id":"agt_01replace","environment":"prod"}'
 ```
 
-```bash
+```bash curl
 curl -sS "https://api.clawb.ai/api/v1/workspace/audit/events?limit=20" \
   -H "X-Clawb-Api-Key: ck_test_replace_me"
 ```
