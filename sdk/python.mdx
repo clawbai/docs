@@ -33,6 +33,11 @@ pip install clawb-agent-sdk
 
 <CodeGroup>
 
+```bash curl
+export CLAWB_BASE_URL="https://api.clawb.ai/api"
+export CLAWB_API_KEY="ck_live_replace_me"
+```
+
 ```python Python SDK
 from clawb_agent_sdk import ClawbClient, WorkspaceControlPlane
 
@@ -44,11 +49,6 @@ control_plane_client = ClawbClient(base_url=BASE_URL)
 
 # High-level workspace helper.
 control_plane = WorkspaceControlPlane(client=control_plane_client, api_key=WORKSPACE_API_KEY)
-```
-
-```bash curl
-export CLAWB_BASE_URL="https://api.clawb.ai/api"
-export CLAWB_API_KEY="ck_live_replace_me"
 ```
 
 </CodeGroup>
@@ -72,23 +72,6 @@ print(pub_b64)
 
 <CodeGroup>
 
-```python Python SDK
-client = ClawbClient(base_url=BASE_URL)
-reg = client.register(name="my-agent", public_key_b64=pub_b64)
-
-agent_client = ClawbClient(
-    base_url=BASE_URL,
-    agent_id=reg["agent_id"],
-    private_key_b64=priv_b64,
-)
-
-# Attest signs the challenge bytes with Ed25519.
-agent_client.attest(
-    challenge_id=reg["challenge_id"],
-    challenge_b64=reg["challenge"],
-)
-```
-
 ```bash curl
 # 1) Register agent (replace public key).
 REGISTER_OUT=$(curl -sS -X POST "$CLAWB_BASE_URL/v1/agents/register" \
@@ -106,6 +89,23 @@ curl -sS -X POST "$CLAWB_BASE_URL/v1/agents/attest" \
     "challenge_id": "ch_01...",
     "signature": "<base64-ed25519-signature>"
   }'
+```
+
+```python Python SDK
+client = ClawbClient(base_url=BASE_URL)
+reg = client.register(name="my-agent", public_key_b64=pub_b64)
+
+agent_client = ClawbClient(
+    base_url=BASE_URL,
+    agent_id=reg["agent_id"],
+    private_key_b64=priv_b64,
+)
+
+# Attest signs the challenge bytes with Ed25519.
+agent_client.attest(
+    challenge_id=reg["challenge_id"],
+    challenge_b64=reg["challenge"],
+)
 ```
 
 </CodeGroup>
@@ -128,13 +128,6 @@ Example response:
 
 <CodeGroup>
 
-```python Python SDK
-agent_client.post(
-    "/v1/telemetry/heartbeat",
-    json={"agent_id": reg["agent_id"], "status": "ok", "latency_ms": 72},
-)
-```
-
 ```bash curl
 curl -sS -X POST "$CLAWB_BASE_URL/v1/telemetry/heartbeat" \
   -H "Content-Type: application/json" \
@@ -143,6 +136,13 @@ curl -sS -X POST "$CLAWB_BASE_URL/v1/telemetry/heartbeat" \
   -H "X-Clawb-Nonce: n_123" \
   -H "X-Clawb-Signature: <base64-signature>" \
   -d '{"agent_id":"agt_01...","status":"ok","latency_ms":72}'
+```
+
+```python Python SDK
+agent_client.post(
+    "/v1/telemetry/heartbeat",
+    json={"agent_id": reg["agent_id"], "status": "ok", "latency_ms": 72},
+)
 ```
 
 </CodeGroup>
@@ -168,20 +168,6 @@ Example response:
 
 <CodeGroup>
 
-```python Python SDK
-# Build verify payload from the original inbound request values.
-verify = control_plane.verify(
-    agent_id="agt_01...",
-    method="POST",
-    path="/v1/refunds",
-    timestamp_ms=1740137855000,
-    nonce="2f8d8b19-5e0a-4f8b-b7d4-6dc15b1fe201",
-    body_sha256=control_plane.sha256_hex(b'{"amount":49.00}'),
-    signature_b64="<x-clawb-signature-header>",
-)
-print(verify)
-```
-
 ```bash curl
 curl -sS -X POST "https://api.clawb.ai/api/v1/verify" \
   -H "Content-Type: application/json" \
@@ -195,6 +181,20 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/verify" \
     "body_sha256": "3adfd3eb02f15d4f4b5a9f5b2d18f8d1b6d8a7eac03f4b7a56ec8f8c2f2ff321",
     "signature_b64": "<base64-signature>"
   }'
+```
+
+```python Python SDK
+# Build verify payload from the original inbound request values.
+verify = control_plane.verify(
+    agent_id="agt_01...",
+    method="POST",
+    path="/v1/refunds",
+    timestamp_ms=1740137855000,
+    nonce="2f8d8b19-5e0a-4f8b-b7d4-6dc15b1fe201",
+    body_sha256=control_plane.sha256_hex(b'{"amount":49.00}'),
+    signature_b64="<x-clawb-signature-header>",
+)
+print(verify)
 ```
 
 </CodeGroup>
@@ -217,16 +217,6 @@ Example response:
 
 <CodeGroup>
 
-```python Python SDK
-decision = control_plane.check(
-    agent_id="agt_01...",
-    policy_id="pol_default",
-    action="refund",
-    context={"amount": 49.00, "currency": "USD"},
-)
-print(decision)
-```
-
 ```bash curl
 curl -sS -X POST "$CLAWB_BASE_URL/v1/check" \
   -H "Content-Type: application/json" \
@@ -237,6 +227,16 @@ curl -sS -X POST "$CLAWB_BASE_URL/v1/check" \
     "action": "refund",
     "context": {"amount": 49.00, "currency": "USD"}
   }'
+```
+
+```python Python SDK
+decision = control_plane.check(
+    agent_id="agt_01...",
+    policy_id="pol_default",
+    action="refund",
+    context={"amount": 49.00, "currency": "USD"},
+)
+print(decision)
 ```
 
 </CodeGroup>
@@ -261,21 +261,6 @@ Example response:
 
 <CodeGroup>
 
-```python Python SDK
-control_plane.workspace_agents_upsert(
-    external_agent_key="github:app:payments-bot",
-    agent_id="agt_01...",
-    display_name="Payments bot",
-    labels=["prod", "payments"],
-    environment="prod",
-    source="provider_api",
-    status="active",
-)
-
-inventory = control_plane.workspace_agents_list(environment="prod", label="payments")
-print(inventory.get("count"))
-```
-
 ```bash curl
 curl -sS -X POST "$CLAWB_BASE_URL/v1/workspace/agents/upsert" \
   -H "Content-Type: application/json" \
@@ -292,6 +277,21 @@ curl -sS -X POST "$CLAWB_BASE_URL/v1/workspace/agents/upsert" \
 
 curl -sS "$CLAWB_BASE_URL/v1/workspace/agents?environment=prod&label=payments" \
   -H "X-Clawb-Api-Key: $CLAWB_API_KEY"
+```
+
+```python Python SDK
+control_plane.workspace_agents_upsert(
+    external_agent_key="github:app:payments-bot",
+    agent_id="agt_01...",
+    display_name="Payments bot",
+    labels=["prod", "payments"],
+    environment="prod",
+    source="provider_api",
+    status="active",
+)
+
+inventory = control_plane.workspace_agents_list(environment="prod", label="payments")
+print(inventory.get("count"))
 ```
 
 </CodeGroup>
@@ -320,6 +320,20 @@ Example response:
 
 <CodeGroup>
 
+```bash curl
+curl -sS "$CLAWB_BASE_URL/v1/workspace/audit/events?start_ms=1740137000000&end_ms=1740139999000&decision=deny&limit=100" \
+  -H "X-Clawb-Api-Key: $CLAWB_API_KEY"
+
+curl -sS -X POST "$CLAWB_BASE_URL/v1/workspace/audit/export" \
+  -H "Content-Type: application/json" \
+  -H "X-Clawb-Api-Key: $CLAWB_API_KEY" \
+  -d '{
+    "format": "csv",
+    "filters": {"decision": "deny"},
+    "limit": 500
+  }'
+```
+
 ```python Python SDK
 events = control_plane.workspace_audit_events(
     start_ms=1740137000000,
@@ -335,20 +349,6 @@ csv_export = control_plane.workspace_audit_export(
     limit=500,
 )
 print(len(csv_export.get("csv", "")))
-```
-
-```bash curl
-curl -sS "$CLAWB_BASE_URL/v1/workspace/audit/events?start_ms=1740137000000&end_ms=1740139999000&decision=deny&limit=100" \
-  -H "X-Clawb-Api-Key: $CLAWB_API_KEY"
-
-curl -sS -X POST "$CLAWB_BASE_URL/v1/workspace/audit/export" \
-  -H "Content-Type: application/json" \
-  -H "X-Clawb-Api-Key: $CLAWB_API_KEY" \
-  -d '{
-    "format": "csv",
-    "filters": {"decision": "deny"},
-    "limit": 500
-  }'
 ```
 
 </CodeGroup>
@@ -376,30 +376,6 @@ Example response:
 ### Identity credential mint and revoke
 
 <CodeGroup>
-
-```python Python SDK
-mint = control_plane.identity_credentials_mint(
-    agent_id="agt_01...",
-    provider="sendgrid",
-    audience="clawb.provider",
-    ttl_seconds=300,
-    one_time=True,
-    scopes=["email:send"],
-    token_type="jwt",
-)
-
-# Revoke one credential by token.
-control_plane.identity_credentials_revoke(
-    token=mint["credential"]["token"],
-    reason="cleanup",
-)
-
-# Revoke all active credentials for one agent.
-control_plane.identity_credentials_revoke_by_agent(
-    agent_id="agt_01...",
-    reason="agent reset",
-)
-```
 
 ```bash curl
 MINT_OUT=$(curl -sS -X POST "$CLAWB_BASE_URL/v1/identity/credentials/mint" \
@@ -432,6 +408,30 @@ curl -sS -X POST "$CLAWB_BASE_URL/v1/identity/credentials/revoke-by-agent" \
   }'
 ```
 
+```python Python SDK
+mint = control_plane.identity_credentials_mint(
+    agent_id="agt_01...",
+    provider="sendgrid",
+    audience="clawb.provider",
+    ttl_seconds=300,
+    one_time=True,
+    scopes=["email:send"],
+    token_type="jwt",
+)
+
+# Revoke one credential by token.
+control_plane.identity_credentials_revoke(
+    token=mint["credential"]["token"],
+    reason="cleanup",
+)
+
+# Revoke all active credentials for one agent.
+control_plane.identity_credentials_revoke_by_agent(
+    agent_id="agt_01...",
+    reason="agent reset",
+)
+```
+
 </CodeGroup>
 
 Example response:
@@ -455,12 +455,6 @@ Example response:
 
 <CodeGroup>
 
-```python Python SDK
-control_plane.identity_kill_switch_minting(paused=True, reason="incident INC-7")
-control_plane.identity_kill_switch_revoke_all(reason="credential compromise")
-print(control_plane.identity_kill_switch_status())
-```
-
 ```bash curl
 curl -sS -X POST "$CLAWB_BASE_URL/v1/identity/kill-switch/minting" \
   -H "Content-Type: application/json" \
@@ -474,6 +468,12 @@ curl -sS -X POST "$CLAWB_BASE_URL/v1/identity/kill-switch/revoke-all" \
 
 curl -sS "$CLAWB_BASE_URL/v1/identity/kill-switch/status" \
   -H "X-Clawb-Api-Key: $CLAWB_API_KEY"
+```
+
+```python Python SDK
+control_plane.identity_kill_switch_minting(paused=True, reason="incident INC-7")
+control_plane.identity_kill_switch_revoke_all(reason="credential compromise")
+print(control_plane.identity_kill_switch_status())
 ```
 
 </CodeGroup>
@@ -496,15 +496,6 @@ Example response:
 
 <CodeGroup>
 
-```python Python SDK
-# SDK automatically computes feedback signature headers.
-control_plane.reputation_feedback(
-    agent_id="agt_01...",
-    verdict="bad",
-    evidence={"reason": "credential_stuffing_pattern"},
-)
-```
-
 ```bash curl
 curl -sS -X POST "$CLAWB_BASE_URL/v1/reputation/feedback" \
   -H "Content-Type: application/json" \
@@ -517,6 +508,15 @@ curl -sS -X POST "$CLAWB_BASE_URL/v1/reputation/feedback" \
     "verdict":"bad",
     "evidence":{"reason":"credential_stuffing_pattern"}
   }'
+```
+
+```python Python SDK
+# SDK automatically computes feedback signature headers.
+control_plane.reputation_feedback(
+    agent_id="agt_01...",
+    verdict="bad",
+    evidence={"reason": "credential_stuffing_pattern"},
+)
 ```
 
 </CodeGroup>
@@ -539,17 +539,17 @@ Example response:
 
 <CodeGroup>
 
+```bash curl
+curl -sS "$CLAWB_BASE_URL/.well-known/openid-configuration"
+curl -sS "$CLAWB_BASE_URL/.well-known/jwks.json"
+```
+
 ```python Python SDK
 cfg = control_plane_client.well_known_openid_configuration()
 jwks = control_plane_client.well_known_jwks()
 
 print(cfg["issuer"])
 print("keys:", len(jwks.get("keys", [])))
-```
-
-```bash curl
-curl -sS "$CLAWB_BASE_URL/.well-known/openid-configuration"
-curl -sS "$CLAWB_BASE_URL/.well-known/jwks.json"
 ```
 
 </CodeGroup>
@@ -570,6 +570,20 @@ Example response:
 ## Token exchange helpers (new)
 
 <CodeGroup>
+
+```bash curl
+curl -sS -X POST "https://api.clawb.ai/api/v1/token/exchange" \
+  -H "Content-Type: application/json" \
+  -H "X-Clawb-Agent-Id: agt_01..." \
+  -H "X-Clawb-Timestamp: 1740137855000" \
+  -H "X-Clawb-Nonce: n_123" \
+  -H "X-Clawb-Signature: <base64-signature>" \
+  -d '{
+    "audience": "aws",
+    "policy_id": "pol_default",
+    "scopes": ["s3:GetObject"]
+  }'
+```
 
 ```python Python SDK
 from clawb_agent_sdk import ClawbClient, ClawbIdentity, get_aws_credentials
@@ -603,20 +617,6 @@ creds = get_aws_credentials(
     role_session_name="clawb-agent-session",
 )
 print(creds["AccessKeyId"])
-```
-
-```bash curl
-curl -sS -X POST "https://api.clawb.ai/api/v1/token/exchange" \
-  -H "Content-Type: application/json" \
-  -H "X-Clawb-Agent-Id: agt_01..." \
-  -H "X-Clawb-Timestamp: 1740137855000" \
-  -H "X-Clawb-Nonce: n_123" \
-  -H "X-Clawb-Signature: <base64-signature>" \
-  -d '{
-    "audience": "aws",
-    "policy_id": "pol_default",
-    "scopes": ["s3:GetObject"]
-  }'
 ```
 
 </CodeGroup>

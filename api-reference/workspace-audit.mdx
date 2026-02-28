@@ -82,6 +82,21 @@ Exports events as JSON or CSV.
 }
 ```
 
+```bash curl
+curl -sS -X POST "https://api.clawb.ai/api/v1/workspace/audit/export" \
+  -H "Content-Type: application/json" \
+  -H "X-Clawb-Api-Key: ck_live_replace_me" \
+  -d '{
+    "format": "csv",
+    "filters": {
+      "start_ms": 1739952000000,
+      "end_ms": 1740038399000,
+      "decision": "deny"
+    },
+    "limit": 1000
+  }'
+```
+
 ```python Python SDK
 from clawb_agent_sdk import ClawbClient, WorkspaceControlPlane
 
@@ -98,21 +113,6 @@ export_out = control_plane.workspace_audit_export(
     limit=1000,
 )
 print(export_out)
-```
-
-```bash curl
-curl -sS -X POST "https://api.clawb.ai/api/v1/workspace/audit/export" \
-  -H "Content-Type: application/json" \
-  -H "X-Clawb-Api-Key: ck_live_replace_me" \
-  -d '{
-    "format": "csv",
-    "filters": {
-      "start_ms": 1739952000000,
-      "end_ms": 1740038399000,
-      "decision": "deny"
-    },
-    "limit": 1000
-  }'
 ```
 
 </CodeGroup>

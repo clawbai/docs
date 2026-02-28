@@ -28,6 +28,18 @@ Signature message format:
 
 <CodeGroup>
 
+```bash curl
+# Use the SDK for signing in production. Curl is best for replaying already-signed test requests.
+
+curl -sS -X POST https://api.clawb.ai/api/v1/reputation/feedback \
+  -H "Content-Type: application/json" \
+  -H "X-Clawb-Api-Key: ck_live_..." \
+  -H "X-Clawb-Feedback-Timestamp: 1740137855000" \
+  -H "X-Clawb-Feedback-Nonce: 2f8d8b19-5e0a-4f8b-b7d4-6dc15b1fe201" \
+  -H "X-Clawb-Feedback-Signature: <base64-hmac-signature>" \
+  -d '{"agent_id":"agt_01...","verdict":"bad","evidence":{"reason":"credential_stuffing_pattern"}}'
+```
+
 ```python Python SDK
 from clawb_agent_sdk import ClawbClient, WorkspaceControlPlane
 
@@ -41,18 +53,6 @@ out = provider.reputation_feedback(
     evidence={"reason": "credential_stuffing_pattern"},
 )
 print(out)  # {"ok": True}
-```
-
-```bash curl
-# Use the SDK for signing in production. Curl is best for replaying already-signed test requests.
-
-curl -sS -X POST https://api.clawb.ai/api/v1/reputation/feedback \
-  -H "Content-Type: application/json" \
-  -H "X-Clawb-Api-Key: ck_live_..." \
-  -H "X-Clawb-Feedback-Timestamp: 1740137855000" \
-  -H "X-Clawb-Feedback-Nonce: 2f8d8b19-5e0a-4f8b-b7d4-6dc15b1fe201" \
-  -H "X-Clawb-Feedback-Signature: <base64-hmac-signature>" \
-  -d '{"agent_id":"agt_01...","verdict":"bad","evidence":{"reason":"credential_stuffing_pattern"}}'
 ```
 
 </CodeGroup>

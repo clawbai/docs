@@ -25,6 +25,11 @@ This tutorial is for teams building secure enterprise agent operations.
 
 <CodeGroup>
 
+```bash curl
+export CLAWB_BASE_URL="https://api.clawb.ai/api"
+export CLAWB_API_KEY="ck_test_replace_me"
+```
+
 ```python Python SDK
 from clawb_agent_sdk import ClawbClient, WorkspaceControlPlane
 
@@ -35,29 +40,11 @@ client = ClawbClient(base_url=BASE_URL)
 control_plane = WorkspaceControlPlane(client=client, api_key=WORKSPACE_API_KEY)
 ```
 
-```bash curl
-export CLAWB_BASE_URL="https://api.clawb.ai/api"
-export CLAWB_API_KEY="ck_test_replace_me"
-```
-
 </CodeGroup>
 
 ## Step 2: upsert workspace mapping
 
 <CodeGroup>
-
-```python Python SDK
-mapping = control_plane.workspace_agents_upsert(
-    external_agent_key="internal:payments-bot",
-    agent_id="agt_01replace",
-    display_name="Payments automation bot",
-    labels=["prod", "payments"],
-    environment="prod",
-    source="workspace_api",
-    status="active",
-)
-print(mapping)
-```
 
 ```bash curl
 curl -sS -X POST "$CLAWB_BASE_URL/v1/workspace/agents/upsert" \
@@ -72,6 +59,19 @@ curl -sS -X POST "$CLAWB_BASE_URL/v1/workspace/agents/upsert" \
     "source":"workspace_api",
     "status":"active"
   }'
+```
+
+```python Python SDK
+mapping = control_plane.workspace_agents_upsert(
+    external_agent_key="internal:payments-bot",
+    agent_id="agt_01replace",
+    display_name="Payments automation bot",
+    labels=["prod", "payments"],
+    environment="prod",
+    source="workspace_api",
+    status="active",
+)
+print(mapping)
 ```
 
 </CodeGroup>
@@ -98,19 +98,6 @@ Example response:
 
 <CodeGroup>
 
-```python Python SDK
-mint = control_plane.identity_credentials_mint(
-    agent_id="agt_01replace",
-    provider="sendgrid",
-    audience="clawb.provider",
-    ttl_seconds=300,
-    one_time=True,
-    scopes=["email:send"],
-    token_type="jwt",
-)
-print(mint["credential"]["cred_id"])
-```
-
 ```bash curl
 curl -sS -X POST "$CLAWB_BASE_URL/v1/identity/credentials/mint" \
   -H "Content-Type: application/json" \
@@ -124,6 +111,19 @@ curl -sS -X POST "$CLAWB_BASE_URL/v1/identity/credentials/mint" \
     "scopes":["email:send"],
     "token_type":"jwt"
   }'
+```
+
+```python Python SDK
+mint = control_plane.identity_credentials_mint(
+    agent_id="agt_01replace",
+    provider="sendgrid",
+    audience="clawb.provider",
+    ttl_seconds=300,
+    one_time=True,
+    scopes=["email:send"],
+    token_type="jwt",
+)
+print(mint["credential"]["cred_id"])
 ```
 
 </CodeGroup>
@@ -150,15 +150,15 @@ Example response:
 
 <CodeGroup>
 
+```bash curl
+curl -sS "$CLAWB_BASE_URL/v1/workspace/audit/events?limit=20" \
+  -H "X-Clawb-Api-Key: $CLAWB_API_KEY"
+```
+
 ```python Python SDK
 audit = control_plane.workspace_audit_events(limit=20)
 for event in audit.get("items", []):
     print(event["created_at"], event["event_type"], event.get("decision"))
-```
-
-```bash curl
-curl -sS "$CLAWB_BASE_URL/v1/workspace/audit/events?limit=20" \
-  -H "X-Clawb-Api-Key: $CLAWB_API_KEY"
 ```
 
 </CodeGroup>
@@ -188,12 +188,6 @@ Example response:
 
 <CodeGroup>
 
-```python Python SDK
-control_plane.identity_kill_switch_minting(paused=True, reason="incident INC-42")
-control_plane.identity_kill_switch_revoke_all(reason="incident INC-42")
-print(control_plane.identity_kill_switch_status())
-```
-
 ```bash curl
 curl -sS -X POST "$CLAWB_BASE_URL/v1/identity/kill-switch/minting" \
   -H "Content-Type: application/json" \
@@ -207,6 +201,12 @@ curl -sS -X POST "$CLAWB_BASE_URL/v1/identity/kill-switch/revoke-all" \
 
 curl -sS "$CLAWB_BASE_URL/v1/identity/kill-switch/status" \
   -H "X-Clawb-Api-Key: $CLAWB_API_KEY"
+```
+
+```python Python SDK
+control_plane.identity_kill_switch_minting(paused=True, reason="incident INC-42")
+control_plane.identity_kill_switch_revoke_all(reason="incident INC-42")
+print(control_plane.identity_kill_switch_status())
 ```
 
 </CodeGroup>
@@ -228,15 +228,6 @@ Example response:
 
 <CodeGroup>
 
-```python Python SDK
-feedback = control_plane.reputation_feedback(
-    agent_id="agt_01replace",
-    verdict="bad",
-    evidence={"reason": "repeated invalid_signature attempts"},
-)
-print(feedback)
-```
-
 ```bash curl
 curl -sS -X POST "$CLAWB_BASE_URL/v1/reputation/feedback" \
   -H "Content-Type: application/json" \
@@ -249,6 +240,15 @@ curl -sS -X POST "$CLAWB_BASE_URL/v1/reputation/feedback" \
     "verdict":"bad",
     "evidence":{"reason":"repeated invalid_signature attempts"}
   }'
+```
+
+```python Python SDK
+feedback = control_plane.reputation_feedback(
+    agent_id="agt_01replace",
+    verdict="bad",
+    evidence={"reason": "repeated invalid_signature attempts"},
+)
+print(feedback)
 ```
 
 </CodeGroup>
