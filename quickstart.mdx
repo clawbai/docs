@@ -50,15 +50,14 @@ See [Attestation](/agents/attestation) for full language-specific examples.
 
 ---
 
-### 2) Verify inbound signed agent requests
+### 2) Verify inbound agent request identity
 
 You can:
 - verify signatures locally (recommended for low latency), or
 - call online verification via `/v1/verify`.
 
-Python SDK example:
-
-```python
+<CodeGroup>
+```python Python SDK
 verify = control_plane.verify(
     agent_id=agent_id,
     method="POST",
@@ -73,9 +72,7 @@ if not verify.get("valid"):
     raise ValueError("invalid signature")
 ```
 
-curl example:
-
-```bash
+```bash curl
 curl -sS -X POST "https://api.clawb.ai/api/v1/verify" \
   -H "Content-Type: application/json" \
   -H "X-Clawb-Api-Key: ck_live_replace_me" \
@@ -89,6 +86,7 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/verify" \
     "signature_b64": "<base64-signature>"
   }'
 ```
+</CodeGroup>
 
 Reference: [Workspace integration flow](/integration/workspace-flow)
 
@@ -115,9 +113,8 @@ X-Clawb-Api-Key: ck_live_...
 }
 ```
 
-Python SDK:
-
-```python
+<CodeGroup>
+```python Python SDK
 decision = control_plane.check(
     agent_id="agt_...",
     policy_id="pol_default",
@@ -125,10 +122,7 @@ decision = control_plane.check(
     context={"amount": 49.0, "currency": "USD", "reason": "late_delivery"},
 )
 ```
-
-curl (quick test):
-
-```bash
+```bash curl
 curl -sS -X POST "https://api.clawb.ai/api/v1/check" \
   -H "Content-Type: application/json" \
   -H "X-Clawb-Api-Key: ck_live_replace_me" \
@@ -139,6 +133,7 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/check" \
     "context": {"amount": 49.0, "currency": "USD", "reason": "late_delivery"}
   }'
 ```
+</CodeGroup>
 
 ---
 
