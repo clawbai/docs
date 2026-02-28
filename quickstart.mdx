@@ -4,7 +4,11 @@ title: Quickstart
 
 ## What you’re building
 
-You’re integrating Clawb as the control plane for sensitive agent actions by calling **`POST /v1/check`** with the action and its context.
+You’re integrating Clawb as the workspace control plane for an enterprise fleet of agents.
+Your gateway/backend will:
+- register and attest agent identities at scale
+- verify inbound signed agent requests
+- check agent permissions immediately before execution with **`POST /v1/check`**
 
 Clawb returns a decision:
 - `allow` → proceed
@@ -24,11 +28,11 @@ You should have:
 
 ---
 
-## Fast path architecture (single request)
+## Fast path architecture (single inbound request)
 
 1. Agent sends a signed request to your backend.
-2. Your backend verifies identity (`/v1/verify` or local signature verification).
-3. Your backend requests a policy decision (`/v1/check`).
+2. Your backend verifies and normalizes the agent identity (`/v1/verify` or local signature verification).
+3. Your backend requests a permission decision (`/v1/check`).
 4. Your backend enforces `allow | challenge | deny`.
 5. Your backend logs `trace_id` and decision metadata.
 
@@ -36,16 +40,17 @@ You should have:
 
 ## Step-by-step implementation
 
-### 1) Create and attest an agent identity
+### 1) Register and attest agent identities
 
 An **agent** is an identity with an `agent_id` and one or more keys.
-Register and attest once, then reuse the identity.
+Register and attest each agent once, then reuse the identity on every request.
+For large fleets, run this as part of your agent provisioning pipeline.
 
 See [Attestation](/agents/attestation) for full language-specific examples.
 
 ---
 
-### 2) Verify inbound request identity
+### 2) Verify inbound signed agent requests
 
 You can:
 - verify signatures locally (recommended for low latency), or
@@ -54,13 +59,13 @@ You can:
 Python SDK example:
 
 ```python
-verify = provider.verify(
+verify = control_plane.verify(
     agent_id=agent_id,
     method="POST",
     path="/v1/refunds",
     timestamp_ms=timestamp_ms,
     nonce=nonce,
-    body_sha256=provider.sha256_hex(raw_body),
+    body_sha256=control_plane.sha256_hex(raw_body),
     signature_b64=signature_b64,
 )
 
@@ -89,7 +94,7 @@ Reference: [Workspace integration flow](/integration/workspace-flow)
 
 ---
 
-### 3) Request a policy decision
+### 3) Check permissions with policy
 
 Raw HTTP:
 
@@ -113,7 +118,7 @@ X-Clawb-Api-Key: ck_live_...
 Python SDK:
 
 ```python
-decision = provider.check(
+decision = control_plane.check(
     agent_id="agt_...",
     policy_id="pol_default",
     action="refund",
@@ -184,11 +189,12 @@ If your action is sensitive and non-idempotent, never “retry execute” unless
 
 ## Production readiness checklist
 
-- Signature verification enabled on all sensitive endpoints.
+- Signature verification enabled on all sensitive agent endpoints.
 - Timestamp validation uses milliseconds and clock skew limits.
 - `/v1/check` wired immediately before execution.
 - All three branches (`allow`, `challenge`, `deny`) tested.
 - Decision + trace metadata logged and queryable.
+- Agent registration/attestation flow automated for new agents.
 - Incident runbook includes kill switch and credential revocation paths.
 
 ---
