@@ -91,8 +91,6 @@ decision = control_plane.check(
 )
 ```
 
-curl:
-
 ```bash curl
 curl -sS -X POST "https://api.clawb.ai/api/v1/check" \
   -H "Content-Type: application/json" \
@@ -132,8 +130,6 @@ mint = control_plane.identity_credentials_mint(
     scopes=["refund:execute"],
 )
 ```
-
-curl:
 
 ```bash curl
 curl -sS -X POST "https://api.clawb.ai/api/v1/identity/credentials/mint" \
