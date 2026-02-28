@@ -119,8 +119,6 @@ verify = control_plane.verify(
 print(verify)
 ```
 
-Raw API fallback (curl):
-
 ```bash curl
 curl -sS -X POST "https://api.clawb.ai/api/v1/verify" \
   -H "Content-Type: application/json" \
@@ -308,8 +306,6 @@ creds = get_aws_credentials(
 )
 print(creds["AccessKeyId"])
 ```
-
-Raw API fallback (curl):
 
 ```bash curl
 curl -sS -X POST "https://api.clawb.ai/api/v1/token/exchange" \
