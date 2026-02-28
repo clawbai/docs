@@ -67,6 +67,20 @@ print(verify)
 
 </CodeGroup>
 
+Example response:
+
+<CodeGroup>
+
+```json JSON
+{
+  "valid": true,
+  "agent_id": "agt_replace_me",
+  "verified_at": "2026-02-28T00:00:00Z"
+}
+```
+
+</CodeGroup>
+
 ### Step 2: enforce policy
 
 Call `POST /v1/check` with `agent_id`, `policy_id`, `action`, and optional context.
@@ -98,6 +112,23 @@ decision = control_plane.check(
     context={"amount": 49.0, "currency": "USD"},
 )
 print(decision)
+```
+
+</CodeGroup>
+
+Example response:
+
+<CodeGroup>
+
+```json JSON
+{
+  "decision": "challenge",
+  "trace_id": "trc_01xyz",
+  "challenge": {
+    "type": "approval_link",
+    "expires_in": 300
+  }
+}
 ```
 
 </CodeGroup>

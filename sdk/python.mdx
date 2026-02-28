@@ -110,6 +110,20 @@ curl -sS -X POST "$CLAWB_BASE_URL/v1/agents/attest" \
 
 </CodeGroup>
 
+Example response:
+
+<CodeGroup>
+
+```json JSON
+{
+  "agent_id": "agt_01...",
+  "challenge_id": "ch_01...",
+  "challenge": "<base64-challenge>"
+}
+```
+
+</CodeGroup>
+
 ### 3) Send signed telemetry heartbeat
 
 <CodeGroup>
@@ -129,6 +143,21 @@ curl -sS -X POST "$CLAWB_BASE_URL/v1/telemetry/heartbeat" \
   -H "X-Clawb-Nonce: n_123" \
   -H "X-Clawb-Signature: <base64-signature>" \
   -d '{"agent_id":"agt_01...","status":"ok","latency_ms":72}'
+```
+
+</CodeGroup>
+
+Example response:
+
+<CodeGroup>
+
+```json JSON
+{
+  "ok": true,
+  "agent_id": "agt_01...",
+  "status": "ok",
+  "recorded_at": "2026-02-28T00:00:00Z"
+}
 ```
 
 </CodeGroup>
@@ -170,6 +199,20 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/verify" \
 
 </CodeGroup>
 
+Example response:
+
+<CodeGroup>
+
+```json JSON
+{
+  "valid": true,
+  "agent_id": "agt_01...",
+  "verified_at": "2026-02-28T00:00:00Z"
+}
+```
+
+</CodeGroup>
+
 ### Enforce policy decision
 
 <CodeGroup>
@@ -194,6 +237,20 @@ curl -sS -X POST "$CLAWB_BASE_URL/v1/check" \
     "action": "refund",
     "context": {"amount": 49.00, "currency": "USD"}
   }'
+```
+
+</CodeGroup>
+
+Example response:
+
+<CodeGroup>
+
+```json JSON
+{
+  "decision": "allow",
+  "trace_id": "trc_01abc",
+  "reasons": []
+}
 ```
 
 </CodeGroup>
@@ -239,6 +296,26 @@ curl -sS "$CLAWB_BASE_URL/v1/workspace/agents?environment=prod&label=payments" \
 
 </CodeGroup>
 
+Example response:
+
+<CodeGroup>
+
+```json JSON
+{
+  "ok": true,
+  "count": 1,
+  "items": [
+    {
+      "external_agent_key": "github:app:payments-bot",
+      "agent_id": "agt_01...",
+      "status": "active"
+    }
+  ]
+}
+```
+
+</CodeGroup>
+
 ### Workspace audit
 
 <CodeGroup>
@@ -272,6 +349,26 @@ curl -sS -X POST "$CLAWB_BASE_URL/v1/workspace/audit/export" \
     "filters": {"decision": "deny"},
     "limit": 500
   }'
+```
+
+</CodeGroup>
+
+Example response:
+
+<CodeGroup>
+
+```json JSON
+{
+  "ok": true,
+  "items": [
+    {
+      "event_id": "evt_01...",
+      "decision": "deny",
+      "created_at": "2026-02-28T00:00:00Z"
+    }
+  ],
+  "next_cursor": "cur_01..."
+}
 ```
 
 </CodeGroup>
@@ -337,6 +434,23 @@ curl -sS -X POST "$CLAWB_BASE_URL/v1/identity/credentials/revoke-by-agent" \
 
 </CodeGroup>
 
+Example response:
+
+<CodeGroup>
+
+```json JSON
+{
+  "ok": true,
+  "credential": {
+    "cred_id": "crd_01...",
+    "token_type": "jwt",
+    "expires_at": "2026-02-28T00:05:00Z"
+  }
+}
+```
+
+</CodeGroup>
+
 ### Kill switch
 
 <CodeGroup>
@@ -360,6 +474,20 @@ curl -sS -X POST "$CLAWB_BASE_URL/v1/identity/kill-switch/revoke-all" \
 
 curl -sS "$CLAWB_BASE_URL/v1/identity/kill-switch/status" \
   -H "X-Clawb-Api-Key: $CLAWB_API_KEY"
+```
+
+</CodeGroup>
+
+Example response:
+
+<CodeGroup>
+
+```json JSON
+{
+  "ok": true,
+  "minting_paused": true,
+  "all_credentials_revoked_at": "2026-02-28T00:00:00Z"
+}
 ```
 
 </CodeGroup>
@@ -393,6 +521,20 @@ curl -sS -X POST "$CLAWB_BASE_URL/v1/reputation/feedback" \
 
 </CodeGroup>
 
+Example response:
+
+<CodeGroup>
+
+```json JSON
+{
+  "ok": true,
+  "accepted": true,
+  "received_at": "2026-02-28T00:00:00Z"
+}
+```
+
+</CodeGroup>
+
 ## Public metadata helpers (new)
 
 <CodeGroup>
@@ -408,6 +550,19 @@ print("keys:", len(jwks.get("keys", [])))
 ```bash curl
 curl -sS "$CLAWB_BASE_URL/.well-known/openid-configuration"
 curl -sS "$CLAWB_BASE_URL/.well-known/jwks.json"
+```
+
+</CodeGroup>
+
+Example response:
+
+<CodeGroup>
+
+```json JSON
+{
+  "issuer": "https://api.clawb.ai/api",
+  "jwks_uri": "https://api.clawb.ai/api/.well-known/jwks.json"
+}
 ```
 
 </CodeGroup>
@@ -462,6 +617,21 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/token/exchange" \
     "policy_id": "pol_default",
     "scopes": ["s3:GetObject"]
   }'
+```
+
+</CodeGroup>
+
+Example response:
+
+<CodeGroup>
+
+```json JSON
+{
+  "ok": true,
+  "token": "<jwt>",
+  "token_type": "Bearer",
+  "expires_in": 900
+}
 ```
 
 </CodeGroup>

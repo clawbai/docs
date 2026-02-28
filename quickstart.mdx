@@ -90,6 +90,20 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/verify" \
 
 </CodeGroup>
 
+Example response:
+
+<CodeGroup>
+
+```json JSON
+{
+  "valid": true,
+  "agent_id": "agt_replace_me",
+  "verified_at": "2026-02-28T00:00:00Z"
+}
+```
+
+</CodeGroup>
+
 Reference: [Workspace integration flow](/integration/workspace-flow)
 
 ---
@@ -117,6 +131,20 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/check" \
     "action": "refund",
     "context": {"amount": 49.0, "currency": "USD", "reason": "late_delivery"}
   }'
+```
+
+</CodeGroup>
+
+Example response:
+
+<CodeGroup>
+
+```json JSON
+{
+  "decision": "allow",
+  "trace_id": "trc_01abc",
+  "reasons": []
+}
 ```
 
 </CodeGroup>
