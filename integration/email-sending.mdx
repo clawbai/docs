@@ -31,23 +31,6 @@ Clawb can act as a **backend enforcement point** for email sending:
 
 <CodeGroup>
 
-```http HTTP
-POST /v1/check
-Content-Type: application/json
-X-Clawb-Api-Key: ck_live_9f2b3c4d5e6f7a8b
-
-{
-  "agent_id": "agt_...",
-  "policy_id": "pol_email",
-  "action": "send_email",
-  "email": {
-    "to": ["user@example.com"],
-    "subject": "Your receipt",
-    "attachments": []
-  }
-}
-```
-
 ```bash curl
 curl -sS -X POST "https://api.clawb.ai/api/v1/check" \
   -H "Content-Type: application/json" \
@@ -90,23 +73,6 @@ print(decision)
 `/v1/email/send` requires a workspace API key header.
 
 <CodeGroup>
-
-```http HTTP
-POST /v1/email/send
-Content-Type: application/json
-X-Clawb-Api-Key: ck_live_9f2b3c4d5e6f7a8b
-
-{
-  "agent_id": "agt_...",
-  "policy_id": "pol_email",
-  "email": {
-    "to": ["user@example.com"],
-    "subject": "Your receipt",
-    "text": "Thanks for your purchase!",
-    "html": "<p>Thanks for your purchase!</p>"
-  }
-}
-```
 
 ```bash curl
 curl -sS -X POST "https://api.clawb.ai/api/v1/email/send" \
