@@ -79,6 +79,27 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/vault/secret-sets" \
   }'
 ```
 
+```python Python SDK
+from clawb_agent_sdk import ClawbClient
+
+client = ClawbClient(base_url="https://api.clawb.ai/api")
+
+secret_set = client.post(
+    "/v1/vault/secret-sets",
+    headers={"X-Clawb-Api-Key": "ck_live_replace_me"},
+    json={
+        "provider": "stripe",
+        "environment": "prod",
+        "name": "billing-bot",
+        "entries": {
+            "STRIPE_SECRET_KEY": "sk_live_...",
+            "STRIPE_WEBHOOK_SECRET": "whsec_...",
+        },
+    },
+)
+print(secret_set)
+```
+
 </CodeGroup>
 
 Notes:
@@ -115,6 +136,24 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/vault/secret-sets/import" \
   }'
 ```
 
+```python Python SDK
+from clawb_agent_sdk import ClawbClient
+
+client = ClawbClient(base_url="https://api.clawb.ai/api")
+
+import_out = client.post(
+    "/v1/vault/secret-sets/import",
+    headers={"X-Clawb-Api-Key": "ck_live_replace_me"},
+    json={
+        "provider": "custom",
+        "environment": "staging",
+        "name": "data-pipeline",
+        "dotenv": "FOO=bar\\nBAZ=qux\\n",
+    },
+)
+print(import_out)
+```
+
 </CodeGroup>
 
 ---
@@ -147,6 +186,25 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/vault/grants" \
     "allowed_keys": ["STRIPE_SECRET_KEY"],
     "expires_at": "2026-03-01T00:00:00Z"
   }'
+```
+
+```python Python SDK
+from clawb_agent_sdk import ClawbClient
+
+client = ClawbClient(base_url="https://api.clawb.ai/api")
+
+grant_out = client.post(
+    "/v1/vault/grants",
+    headers={"X-Clawb-Api-Key": "ck_live_replace_me"},
+    json={
+        "agent_id": "agt_123",
+        "secret_set_id": "ss_456",
+        "allowed_actions": ["proxy_use"],
+        "allowed_keys": ["STRIPE_SECRET_KEY"],
+        "expires_at": "2026-03-01T00:00:00Z",
+    },
+)
+print(grant_out)
 ```
 
 </CodeGroup>
@@ -185,6 +243,25 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/vault/leases" \
     "action": "proxy_use",
     "ttl_seconds": 60
   }'
+```
+
+```python Python SDK
+from clawb_agent_sdk import ClawbClient
+
+client = ClawbClient(base_url="https://api.clawb.ai/api")
+
+lease_out = client.post(
+    "/v1/vault/leases",
+    headers={"X-Clawb-Api-Key": "ck_live_replace_me"},
+    json={
+        "agent_id": "agt_123",
+        "secret_set_id": "ss_456",
+        "kind": "request",
+        "action": "proxy_use",
+        "ttl_seconds": 60,
+    },
+)
+print(lease_out)
 ```
 
 </CodeGroup>
@@ -239,6 +316,32 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/vault/proxy" \
   }'
 ```
 
+```python Python SDK
+from clawb_agent_sdk import ClawbClient
+
+client = ClawbClient(base_url="https://api.clawb.ai/api")
+
+proxy_out = client.post(
+    "/v1/vault/proxy",
+    headers={"X-Clawb-Api-Key": "ck_live_replace_me"},
+    json={
+        "lease_id": "ls_789",
+        "target": {
+            "method": "POST",
+            "url": "https://api.stripe.com/v1/refunds",
+            "headers": {"Content-Type": "application/x-www-form-urlencoded"},
+            "body": "payment_intent=pi_...&amount=100",
+        },
+        "injection": {
+            "type": "header",
+            "header": "Authorization",
+            "format": "Bearer ${STRIPE_SECRET_KEY}",
+        },
+    },
+)
+print(proxy_out)
+```
+
 </CodeGroup>
 
 Notes:
@@ -259,6 +362,18 @@ GET /v1/vault/audit?secret_set_id=ss_456&limit=50
 ```bash
 curl -sS "https://api.clawb.ai/api/v1/vault/audit?secret_set_id=ss_456&limit=50" \
   -H "X-Clawb-Api-Key: ck_live_replace_me"
+```
+
+```python Python SDK
+from clawb_agent_sdk import ClawbClient
+
+client = ClawbClient(base_url="https://api.clawb.ai/api")
+
+audit_rows = client.get(
+    "/v1/vault/audit?secret_set_id=ss_456&limit=50",
+    headers={"X-Clawb-Api-Key": "ck_live_replace_me"},
+)
+print(audit_rows)
 ```
 
 </CodeGroup>

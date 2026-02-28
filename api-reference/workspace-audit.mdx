@@ -28,6 +28,16 @@ curl -sS "https://api.clawb.ai/api/v1/workspace/audit/events?agent_id=agt_123&li
   -H "X-Clawb-Api-Key: ck_live_..."
 ```
 
+```python Python SDK
+from clawb_agent_sdk import ClawbClient, WorkspaceControlPlane
+
+client = ClawbClient(base_url="https://api.clawb.ai/api")
+control_plane = WorkspaceControlPlane(client=client, api_key="ck_live_replace_me")
+
+events = control_plane.workspace_audit_events(agent_id="agt_123", limit=100)
+print(events)
+```
+
 </CodeGroup>
 
 ## POST `/v1/workspace/audit/export`
@@ -48,6 +58,24 @@ Exports events as JSON or CSV.
   },
   "limit": 1000
 }
+```
+
+```python Python SDK
+from clawb_agent_sdk import ClawbClient, WorkspaceControlPlane
+
+client = ClawbClient(base_url="https://api.clawb.ai/api")
+control_plane = WorkspaceControlPlane(client=client, api_key="ck_live_replace_me")
+
+export_out = control_plane.workspace_audit_export(
+    format="csv",
+    filters={
+        "start_ms": 1739952000000,
+        "end_ms": 1740038399000,
+        "decision": "deny",
+    },
+    limit=1000,
+)
+print(export_out)
 ```
 
 </CodeGroup>

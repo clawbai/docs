@@ -54,6 +54,17 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/agents/register" \
   }'
 ```
 
+```python Python SDK
+from clawb_agent_sdk import ClawbClient
+
+client = ClawbClient(base_url="https://api.clawb.ai/api")
+register_out = client.register(
+    name="my-agent",
+    public_key_b64="<base64-ed25519-public-key>",
+)
+print(register_out)
+```
+
 </CodeGroup>
 
 ### 2) Decode the challenge (base64 → bytes)
@@ -109,6 +120,21 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/agents/attest" \
     "challenge_id": "ch_...",
     "signature": "<base64-signature>"
   }'
+```
+
+```python Python SDK
+from clawb_agent_sdk import ClawbClient
+
+agent_client = ClawbClient(
+    base_url="https://api.clawb.ai/api",
+    agent_id="agt_...",
+    private_key_b64="<private_key_b64>",
+)
+
+agent_client.attest(
+    challenge_id="ch_...",
+    challenge_b64="<challenge_base64>",
+)
 ```
 
 </CodeGroup>

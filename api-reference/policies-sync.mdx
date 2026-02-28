@@ -62,6 +62,27 @@ curl -sS -X POST https://api.clawb.ai/api/v1/policies/sync \
   -d '{"dry_run":true,"spec":{"reusable_policy_blocks":{},"agent_groups":[],"bindings":[],"global_guardrails":{}}}'
 ```
 
+```python Python SDK
+from clawb_agent_sdk import ClawbClient
+
+client = ClawbClient(base_url="https://api.clawb.ai/api")
+
+sync_out = client.post(
+    "/v1/policies/sync",
+    headers={"Cookie": "<dashboard-session-cookie>"},
+    json={
+        "dry_run": True,
+        "spec": {
+            "reusable_policy_blocks": {},
+            "agent_groups": [],
+            "bindings": [],
+            "global_guardrails": {},
+        },
+    },
+)
+print(sync_out)
+```
+
 </CodeGroup>
 
 ### Response patterns
