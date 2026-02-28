@@ -76,6 +76,24 @@ curl -sS -X POST "$CLAWB_BASE_URL/v1/workspace/agents/upsert" \
 
 </CodeGroup>
 
+Example response:
+
+<CodeGroup>
+
+```json JSON
+{
+  "ok": true,
+  "item": {
+    "external_agent_key": "internal:payments-bot",
+    "agent_id": "agt_01replace",
+    "environment": "prod",
+    "status": "active"
+  }
+}
+```
+
+</CodeGroup>
+
 ## Step 3: mint short-lived credential
 
 <CodeGroup>
@@ -110,6 +128,24 @@ curl -sS -X POST "$CLAWB_BASE_URL/v1/identity/credentials/mint" \
 
 </CodeGroup>
 
+Example response:
+
+<CodeGroup>
+
+```json JSON
+{
+  "ok": true,
+  "credential": {
+    "cred_id": "crd_01...",
+    "token_type": "jwt",
+    "expires_at": "2026-02-28T00:05:00Z",
+    "one_time": true
+  }
+}
+```
+
+</CodeGroup>
+
 ## Step 4: query audit events
 
 <CodeGroup>
@@ -123,6 +159,27 @@ for event in audit.get("items", []):
 ```bash curl
 curl -sS "$CLAWB_BASE_URL/v1/workspace/audit/events?limit=20" \
   -H "X-Clawb-Api-Key: $CLAWB_API_KEY"
+```
+
+</CodeGroup>
+
+Example response:
+
+<CodeGroup>
+
+```json JSON
+{
+  "ok": true,
+  "items": [
+    {
+      "event_id": "evt_01...",
+      "event_type": "policy_check",
+      "decision": "deny",
+      "created_at": "2026-02-28T00:00:00Z"
+    }
+  ],
+  "next_cursor": "cur_01..."
+}
 ```
 
 </CodeGroup>
@@ -154,6 +211,19 @@ curl -sS "$CLAWB_BASE_URL/v1/identity/kill-switch/status" \
 
 </CodeGroup>
 
+Example response:
+
+<CodeGroup>
+
+```json JSON
+{
+  "minting_paused": true,
+  "all_credentials_revoked_at": "2026-02-28T00:00:00Z"
+}
+```
+
+</CodeGroup>
+
 ## Step 6: submit reputation feedback
 
 <CodeGroup>
@@ -179,6 +249,20 @@ curl -sS -X POST "$CLAWB_BASE_URL/v1/reputation/feedback" \
     "verdict":"bad",
     "evidence":{"reason":"repeated invalid_signature attempts"}
   }'
+```
+
+</CodeGroup>
+
+Example response:
+
+<CodeGroup>
+
+```json JSON
+{
+  "ok": true,
+  "accepted": true,
+  "received_at": "2026-02-28T00:00:00Z"
+}
 ```
 
 </CodeGroup>

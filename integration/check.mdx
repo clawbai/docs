@@ -14,28 +14,9 @@ X-Clawb-Api-Key: ck_live_...
 
 </CodeGroup>
 
-## Request
-
-<CodeGroup>
-
-```json JSON
-{
-  "agent_id": "agt_...",
-  "policy_id": "pol_default",
-  "action": "refund",
-  "context": {
-    "amount": 49.0,
-    "currency": "USD",
-    "reason": "late_delivery"
-  }
-}
-```
-
-</CodeGroup>
 
 For `action: "send_email"`, include `email` object fields so policy constraints can evaluate recipients and attachments.
 
-## curl quick test
 
 <CodeGroup>
 

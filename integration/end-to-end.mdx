@@ -74,6 +74,20 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/verify" \
 
 </CodeGroup>
 
+Example response:
+
+<CodeGroup>
+
+```json JSON
+{
+  "valid": true,
+  "agent_id": "agt_replace_me",
+  "verified_at": "2026-02-28T00:00:00Z"
+}
+```
+
+</CodeGroup>
+
 ---
 
 ## 3) Request policy decision
@@ -100,6 +114,20 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/check" \
     "action": "refund",
     "context": {"amount": 249.00, "currency": "USD", "reason": "duplicate_charge"}
   }'
+```
+
+</CodeGroup>
+
+Example response:
+
+<CodeGroup>
+
+```json JSON
+{
+  "decision": "allow",
+  "trace_id": "trc_01abc",
+  "reasons": []
+}
 ```
 
 </CodeGroup>
@@ -145,6 +173,23 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/identity/credentials/mint" \
 
 </CodeGroup>
 
+Example response:
+
+<CodeGroup>
+
+```json JSON
+{
+  "ok": true,
+  "credential": {
+    "cred_id": "crd_01...",
+    "token_type": "jwt",
+    "expires_at": "2026-02-28T00:02:00Z"
+  }
+}
+```
+
+</CodeGroup>
+
 Use the returned credential only for the bounded operation.
 
 ---
@@ -173,6 +218,26 @@ curl -sS "https://api.clawb.ai/api/v1/workspace/audit/events?agent_id=agt_replac
 
 </CodeGroup>
 
+Example response:
+
+<CodeGroup>
+
+```json JSON
+{
+  "ok": true,
+  "items": [
+    {
+      "event_id": "evt_01...",
+      "action": "refund",
+      "decision": "allow",
+      "trace_id": "trc_01abc"
+    }
+  ]
+}
+```
+
+</CodeGroup>
+
 ---
 
 ## 6) Emergency mode (incident branch)
@@ -196,6 +261,19 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/identity/kill-switch/revoke-all" \
   -H "Content-Type: application/json" \
   -H "X-Clawb-Api-Key: ck_live_replace_me" \
   -d '{"reason": "incident INC-404"}'
+```
+
+</CodeGroup>
+
+Example response:
+
+<CodeGroup>
+
+```json JSON
+{
+  "minting_paused": true,
+  "all_credentials_revoked_at": "2026-02-28T00:00:00Z"
+}
 ```
 
 </CodeGroup>
