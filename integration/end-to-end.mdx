@@ -61,6 +61,8 @@ if not verify_result.get("valid"):
 
 Python SDK:
 
+<CodeGroup>
+
 ```python
 decision = control_plane.check(
     agent_id=agent_id,
@@ -84,6 +86,8 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/check" \
   }'
 ```
 
+</CodeGroup>
+
 Decision branches:
 - `allow`: continue
 - `challenge`: pause and route to approval
@@ -96,6 +100,8 @@ Decision branches:
 Use this when the follow-on service call should be explicitly time/scoped.
 
 Python SDK:
+
+<CodeGroup>
 
 ```python
 mint = control_plane.identity_credentials_mint(
@@ -124,6 +130,8 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/identity/credentials/mint" \
   }'
 ```
 
+</CodeGroup>
+
 Use the returned credential only for the bounded operation.
 
 ---
@@ -139,6 +147,8 @@ At execution time, record:
 
 Query recent events:
 
+<CodeGroup>
+
 ```python
 audit = control_plane.workspace_audit_events(agent_id=agent_id, limit=20)
 ```
@@ -148,11 +158,15 @@ curl -sS "https://api.clawb.ai/api/v1/workspace/audit/events?agent_id=agt_replac
   -H "X-Clawb-Api-Key: ck_live_replace_me"
 ```
 
+</CodeGroup>
+
 ---
 
 ## 6) Emergency mode (incident branch)
 
 If compromise is suspected, pause minting and revoke active credentials:
+
+<CodeGroup>
 
 ```python
 control_plane.identity_kill_switch_minting(paused=True, reason="incident INC-404")
@@ -170,6 +184,8 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/identity/kill-switch/revoke-all" \
   -H "X-Clawb-Api-Key: ck_live_replace_me" \
   -d '{"reason": "incident INC-404"}'
 ```
+
+</CodeGroup>
 
 ---
 
