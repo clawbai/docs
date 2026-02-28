@@ -26,25 +26,6 @@ Signature message format:
 
 </CodeGroup>
 
-### Request body
-
-<CodeGroup>
-
-```json JSON
-{
-  "agent_id": "agt_01...",
-  "verdict": "bad",
-  "evidence": {
-    "reason": "credential_stuffing_pattern",
-    "request_ids": ["req_1", "req_2"]
-  }
-}
-```
-
-</CodeGroup>
-
-### Python SDK example (recommended)
-
 <CodeGroup>
 
 ```python Python SDK
@@ -62,15 +43,9 @@ out = provider.reputation_feedback(
 print(out)  # {"ok": True}
 ```
 
-</CodeGroup>
-
-### Curl example
-
-Use the SDK for signing in production. Curl is best for replaying already-signed test requests.
-
-<CodeGroup>
-
 ```bash curl
+# Use the SDK for signing in production. Curl is best for replaying already-signed test requests.
+
 curl -sS -X POST https://api.clawb.ai/api/v1/reputation/feedback \
   -H "Content-Type: application/json" \
   -H "X-Clawb-Api-Key: ck_live_..." \

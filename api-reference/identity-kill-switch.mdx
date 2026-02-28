@@ -9,21 +9,6 @@ Use kill-switch endpoints during security incidents.
 
 Pause or resume minting.
 
-### Request
-
-<CodeGroup>
-
-```json JSON
-{
-  "paused": true,
-  "reason": "incident INC-123"
-}
-```
-
-</CodeGroup>
-
-### curl
-
 <CodeGroup>
 
 ```bash curl
@@ -32,12 +17,6 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/identity/kill-switch/minting" \
   -H "X-Clawb-Api-Key: ck_live_replace_me" \
   -d '{"paused": true, "reason": "incident INC-123"}'
 ```
-
-</CodeGroup>
-
-### Python SDK
-
-<CodeGroup>
 
 ```python Python SDK
 # Pause all minting in this workspace.

@@ -11,22 +11,6 @@ Telemetry helps Clawb maintain current health signals for each agent.
 
 Agent-signed request.
 
-### Request body
-
-<CodeGroup>
-
-```json JSON
-{
-  "agent_id": "agt_01...",
-  "status": "ok",
-  "latency_ms": 123
-}
-```
-
-</CodeGroup>
-
-### curl example
-
 <CodeGroup>
 
 ```bash curl
@@ -38,12 +22,6 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/telemetry/heartbeat" \
   -H "X-Clawb-Signature: <base64-signature>" \
   -d '{"agent_id":"agt_01...","status":"ok","latency_ms":123}'
 ```
-
-</CodeGroup>
-
-### Python SDK example
-
-<CodeGroup>
 
 ```python Python SDK
 from clawb_agent_sdk import ClawbClient
