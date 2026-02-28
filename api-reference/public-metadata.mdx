@@ -21,6 +21,15 @@ No auth required.
 curl -sS https://api.clawb.ai/api/.well-known/openid-configuration
 ```
 
+```python Python SDK
+from clawb_agent_sdk import ClawbClient
+
+client = ClawbClient(base_url="https://api.clawb.ai/api")
+cfg = client.well_known_openid_configuration()
+print("issuer:", cfg["issuer"])
+print("jwks_uri:", cfg["jwks_uri"])
+```
+
 </CodeGroup>
 
 ### Example response
