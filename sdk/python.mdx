@@ -46,6 +46,11 @@ control_plane_client = ClawbClient(base_url=BASE_URL)
 control_plane = WorkspaceControlPlane(client=control_plane_client, api_key=WORKSPACE_API_KEY)
 ```
 
+```bash curl
+export CLAWB_BASE_URL="https://api.clawb.ai/api"
+export CLAWB_API_KEY="ck_live_replace_me"
+```
+
 </CodeGroup>
 
 ## Agent onboarding and signed runtime
@@ -84,6 +89,25 @@ agent_client.attest(
 )
 ```
 
+```bash curl
+# 1) Register agent (replace public key).
+REGISTER_OUT=$(curl -sS -X POST "$CLAWB_BASE_URL/v1/agents/register" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "my-agent",
+    "public_key": "<base64-ed25519-public-key>"
+  }')
+
+# 2) Sign challenge bytes locally, then attest with the signature.
+curl -sS -X POST "$CLAWB_BASE_URL/v1/agents/attest" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "agent_id": "agt_01...",
+    "challenge_id": "ch_01...",
+    "signature": "<base64-ed25519-signature>"
+  }'
+```
+
 </CodeGroup>
 
 ### 3) Send signed telemetry heartbeat
@@ -95,6 +119,16 @@ agent_client.post(
     "/v1/telemetry/heartbeat",
     json={"agent_id": reg["agent_id"], "status": "ok", "latency_ms": 72},
 )
+```
+
+```bash curl
+curl -sS -X POST "$CLAWB_BASE_URL/v1/telemetry/heartbeat" \
+  -H "Content-Type: application/json" \
+  -H "X-Clawb-Agent-Id: agt_01..." \
+  -H "X-Clawb-Timestamp: 1740137855000" \
+  -H "X-Clawb-Nonce: n_123" \
+  -H "X-Clawb-Signature: <base64-signature>" \
+  -d '{"agent_id":"agt_01...","status":"ok","latency_ms":72}'
 ```
 
 </CodeGroup>
@@ -150,6 +184,18 @@ decision = control_plane.check(
 print(decision)
 ```
 
+```bash curl
+curl -sS -X POST "$CLAWB_BASE_URL/v1/check" \
+  -H "Content-Type: application/json" \
+  -H "X-Clawb-Api-Key: $CLAWB_API_KEY" \
+  -d '{
+    "agent_id": "agt_01...",
+    "policy_id": "pol_default",
+    "action": "refund",
+    "context": {"amount": 49.00, "currency": "USD"}
+  }'
+```
+
 </CodeGroup>
 
 ## Workspace control-plane APIs (new)
@@ -173,6 +219,24 @@ inventory = control_plane.workspace_agents_list(environment="prod", label="payme
 print(inventory.get("count"))
 ```
 
+```bash curl
+curl -sS -X POST "$CLAWB_BASE_URL/v1/workspace/agents/upsert" \
+  -H "Content-Type: application/json" \
+  -H "X-Clawb-Api-Key: $CLAWB_API_KEY" \
+  -d '{
+    "external_agent_key": "github:app:payments-bot",
+    "agent_id": "agt_01...",
+    "display_name": "Payments bot",
+    "labels": ["prod", "payments"],
+    "environment": "prod",
+    "source": "provider_api",
+    "status": "active"
+  }'
+
+curl -sS "$CLAWB_BASE_URL/v1/workspace/agents?environment=prod&label=payments" \
+  -H "X-Clawb-Api-Key: $CLAWB_API_KEY"
+```
+
 </CodeGroup>
 
 ### Workspace audit
@@ -194,6 +258,20 @@ csv_export = control_plane.workspace_audit_export(
     limit=500,
 )
 print(len(csv_export.get("csv", "")))
+```
+
+```bash curl
+curl -sS "$CLAWB_BASE_URL/v1/workspace/audit/events?start_ms=1740137000000&end_ms=1740139999000&decision=deny&limit=100" \
+  -H "X-Clawb-Api-Key: $CLAWB_API_KEY"
+
+curl -sS -X POST "$CLAWB_BASE_URL/v1/workspace/audit/export" \
+  -H "Content-Type: application/json" \
+  -H "X-Clawb-Api-Key: $CLAWB_API_KEY" \
+  -d '{
+    "format": "csv",
+    "filters": {"decision": "deny"},
+    "limit": 500
+  }'
 ```
 
 </CodeGroup>
@@ -226,6 +304,37 @@ control_plane.identity_credentials_revoke_by_agent(
 )
 ```
 
+```bash curl
+MINT_OUT=$(curl -sS -X POST "$CLAWB_BASE_URL/v1/identity/credentials/mint" \
+  -H "Content-Type: application/json" \
+  -H "X-Clawb-Api-Key: $CLAWB_API_KEY" \
+  -d '{
+    "agent_id":"agt_01...",
+    "provider":"sendgrid",
+    "audience":"clawb.provider",
+    "ttl_seconds":300,
+    "one_time":true,
+    "scopes":["email:send"],
+    "token_type":"jwt"
+  }')
+
+curl -sS -X POST "$CLAWB_BASE_URL/v1/identity/credentials/revoke" \
+  -H "Content-Type: application/json" \
+  -H "X-Clawb-Api-Key: $CLAWB_API_KEY" \
+  -d '{
+    "token":"<credential-token>",
+    "reason":"cleanup"
+  }'
+
+curl -sS -X POST "$CLAWB_BASE_URL/v1/identity/credentials/revoke-by-agent" \
+  -H "Content-Type: application/json" \
+  -H "X-Clawb-Api-Key: $CLAWB_API_KEY" \
+  -d '{
+    "agent_id":"agt_01...",
+    "reason":"agent reset"
+  }'
+```
+
 </CodeGroup>
 
 ### Kill switch
@@ -236,6 +345,21 @@ control_plane.identity_credentials_revoke_by_agent(
 control_plane.identity_kill_switch_minting(paused=True, reason="incident INC-7")
 control_plane.identity_kill_switch_revoke_all(reason="credential compromise")
 print(control_plane.identity_kill_switch_status())
+```
+
+```bash curl
+curl -sS -X POST "$CLAWB_BASE_URL/v1/identity/kill-switch/minting" \
+  -H "Content-Type: application/json" \
+  -H "X-Clawb-Api-Key: $CLAWB_API_KEY" \
+  -d '{"paused":true,"reason":"incident INC-7"}'
+
+curl -sS -X POST "$CLAWB_BASE_URL/v1/identity/kill-switch/revoke-all" \
+  -H "Content-Type: application/json" \
+  -H "X-Clawb-Api-Key: $CLAWB_API_KEY" \
+  -d '{"reason":"credential compromise"}'
+
+curl -sS "$CLAWB_BASE_URL/v1/identity/kill-switch/status" \
+  -H "X-Clawb-Api-Key: $CLAWB_API_KEY"
 ```
 
 </CodeGroup>
@@ -253,6 +377,20 @@ control_plane.reputation_feedback(
 )
 ```
 
+```bash curl
+curl -sS -X POST "$CLAWB_BASE_URL/v1/reputation/feedback" \
+  -H "Content-Type: application/json" \
+  -H "X-Clawb-Api-Key: $CLAWB_API_KEY" \
+  -H "X-Clawb-Feedback-Timestamp: 1740137855000" \
+  -H "X-Clawb-Feedback-Nonce: n_123" \
+  -H "X-Clawb-Feedback-Signature: <base64-hmac>" \
+  -d '{
+    "agent_id":"agt_01...",
+    "verdict":"bad",
+    "evidence":{"reason":"credential_stuffing_pattern"}
+  }'
+```
+
 </CodeGroup>
 
 ## Public metadata helpers (new)
@@ -265,6 +403,11 @@ jwks = control_plane_client.well_known_jwks()
 
 print(cfg["issuer"])
 print("keys:", len(jwks.get("keys", [])))
+```
+
+```bash curl
+curl -sS "$CLAWB_BASE_URL/.well-known/openid-configuration"
+curl -sS "$CLAWB_BASE_URL/.well-known/jwks.json"
 ```
 
 </CodeGroup>
