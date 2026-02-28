@@ -96,29 +96,6 @@ Reference: [Workspace integration flow](/integration/workspace-flow)
 
 ### 3) Check permissions with policy
 
-Raw HTTP:
-
-<CodeGroup>
-
-```http HTTP
-POST /v1/check
-Content-Type: application/json
-X-Clawb-Api-Key: ck_live_...
-
-{
-  "agent_id": "agt_...",
-  "policy_id": "pol_default",
-  "action": "refund",
-  "context": {
-    "amount": 49.0,
-    "currency": "USD",
-    "reason": "late_delivery"
-  }
-}
-```
-
-</CodeGroup>
-
 <CodeGroup>
 
 ```python Python SDK
