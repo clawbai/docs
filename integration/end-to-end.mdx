@@ -42,21 +42,6 @@ Use local verification or online `/v1/verify`:
 
 <CodeGroup>
 
-```python Python SDK
-verify_result = control_plane.verify(
-    agent_id=agent_id,
-    method="POST",
-    path="/v1/refunds",
-    timestamp_ms=timestamp_ms,
-    nonce=nonce,
-    body_sha256=control_plane.sha256_hex(raw_body),
-    signature_b64=signature_b64,
-)
-
-if not verify_result.get("valid"):
-    raise ValueError("invalid signature")
-```
-
 ```bash curl
 curl -sS -X POST "https://api.clawb.ai/api/v1/verify" \
   -H "Content-Type: application/json" \
@@ -70,6 +55,21 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/verify" \
     "body_sha256": "3adfd3eb02f15d4f4b5a9f5b2d18f8d1b6d8a7eac03f4b7a56ec8f8c2f2ff321",
     "signature_b64": "<base64-signature>"
   }'
+```
+
+```python Python SDK
+verify_result = control_plane.verify(
+    agent_id=agent_id,
+    method="POST",
+    path="/v1/refunds",
+    timestamp_ms=timestamp_ms,
+    nonce=nonce,
+    body_sha256=control_plane.sha256_hex(raw_body),
+    signature_b64=signature_b64,
+)
+
+if not verify_result.get("valid"):
+    raise ValueError("invalid signature")
 ```
 
 </CodeGroup>
@@ -95,15 +95,6 @@ Example response:
 
 <CodeGroup>
 
-```python Python SDK
-decision = control_plane.check(
-    agent_id=agent_id,
-    policy_id="pol_refunds_v2",
-    action="refund",
-    context={"amount": 249.00, "currency": "USD", "reason": "duplicate_charge"},
-)
-```
-
 ```bash curl
 curl -sS -X POST "https://api.clawb.ai/api/v1/check" \
   -H "Content-Type: application/json" \
@@ -114,6 +105,15 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/check" \
     "action": "refund",
     "context": {"amount": 249.00, "currency": "USD", "reason": "duplicate_charge"}
   }'
+```
+
+```python Python SDK
+decision = control_plane.check(
+    agent_id=agent_id,
+    policy_id="pol_refunds_v2",
+    action="refund",
+    context={"amount": 249.00, "currency": "USD", "reason": "duplicate_charge"},
+)
 ```
 
 </CodeGroup>
@@ -146,17 +146,6 @@ Use this when the follow-on service call should be explicitly time/scoped.
 
 <CodeGroup>
 
-```python Python SDK
-mint = control_plane.identity_credentials_mint(
-    agent_id=agent_id,
-    provider="payments",
-    audience="clawb.provider",
-    ttl_seconds=120,
-    one_time=True,
-    scopes=["refund:execute"],
-)
-```
-
 ```bash curl
 curl -sS -X POST "https://api.clawb.ai/api/v1/identity/credentials/mint" \
   -H "Content-Type: application/json" \
@@ -169,6 +158,17 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/identity/credentials/mint" \
     "one_time": true,
     "scopes": ["refund:execute"]
   }'
+```
+
+```python Python SDK
+mint = control_plane.identity_credentials_mint(
+    agent_id=agent_id,
+    provider="payments",
+    audience="clawb.provider",
+    ttl_seconds=120,
+    one_time=True,
+    scopes=["refund:execute"],
+)
 ```
 
 </CodeGroup>
@@ -207,13 +207,13 @@ Query recent events:
 
 <CodeGroup>
 
-```python Python SDK
-audit = control_plane.workspace_audit_events(agent_id=agent_id, limit=20)
-```
-
 ```bash curl
 curl -sS "https://api.clawb.ai/api/v1/workspace/audit/events?agent_id=agt_replace_me&limit=20" \
   -H "X-Clawb-Api-Key: ck_live_replace_me"
+```
+
+```python Python SDK
+audit = control_plane.workspace_audit_events(agent_id=agent_id, limit=20)
 ```
 
 </CodeGroup>
@@ -246,11 +246,6 @@ If compromise is suspected, pause minting and revoke active credentials:
 
 <CodeGroup>
 
-```python Python SDK
-control_plane.identity_kill_switch_minting(paused=True, reason="incident INC-404")
-control_plane.identity_kill_switch_revoke_all(reason="incident INC-404")
-```
-
 ```bash curl
 curl -sS -X POST "https://api.clawb.ai/api/v1/identity/kill-switch/minting" \
   -H "Content-Type: application/json" \
@@ -261,6 +256,11 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/identity/kill-switch/revoke-all" \
   -H "Content-Type: application/json" \
   -H "X-Clawb-Api-Key: ck_live_replace_me" \
   -d '{"reason": "incident INC-404"}'
+```
+
+```python Python SDK
+control_plane.identity_kill_switch_minting(paused=True, reason="incident INC-404")
+control_plane.identity_kill_switch_revoke_all(reason="incident INC-404")
 ```
 
 </CodeGroup>

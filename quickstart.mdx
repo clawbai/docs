@@ -58,21 +58,6 @@ You can:
 
 <CodeGroup>
 
-```python Python SDK
-verify = control_plane.verify(
-    agent_id=agent_id,
-    method="POST",
-    path="/v1/refunds",
-    timestamp_ms=timestamp_ms,
-    nonce=nonce,
-    body_sha256=control_plane.sha256_hex(raw_body),
-    signature_b64=signature_b64,
-)
-
-if not verify.get("valid"):
-    raise ValueError("invalid signature")
-```
-
 ```bash curl
 curl -sS -X POST "https://api.clawb.ai/api/v1/verify" \
   -H "Content-Type: application/json" \
@@ -86,6 +71,21 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/verify" \
     "body_sha256": "3adfd3eb02f15d4f4b5a9f5b2d18f8d1b6d8a7eac03f4b7a56ec8f8c2f2ff321",
     "signature_b64": "<base64-signature>"
   }'
+```
+
+```python Python SDK
+verify = control_plane.verify(
+    agent_id=agent_id,
+    method="POST",
+    path="/v1/refunds",
+    timestamp_ms=timestamp_ms,
+    nonce=nonce,
+    body_sha256=control_plane.sha256_hex(raw_body),
+    signature_b64=signature_b64,
+)
+
+if not verify.get("valid"):
+    raise ValueError("invalid signature")
 ```
 
 </CodeGroup>
@@ -112,15 +112,6 @@ Reference: [Workspace integration flow](/integration/workspace-flow)
 
 <CodeGroup>
 
-```python Python SDK
-decision = control_plane.check(
-    agent_id="agt_...",
-    policy_id="pol_default",
-    action="refund",
-    context={"amount": 49.0, "currency": "USD", "reason": "late_delivery"},
-)
-```
-
 ```bash curl
 curl -sS -X POST "https://api.clawb.ai/api/v1/check" \
   -H "Content-Type: application/json" \
@@ -131,6 +122,15 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/check" \
     "action": "refund",
     "context": {"amount": 49.0, "currency": "USD", "reason": "late_delivery"}
   }'
+```
+
+```python Python SDK
+decision = control_plane.check(
+    agent_id="agt_...",
+    policy_id="pol_default",
+    action="refund",
+    context={"amount": 49.0, "currency": "USD", "reason": "late_delivery"},
+)
 ```
 
 </CodeGroup>
