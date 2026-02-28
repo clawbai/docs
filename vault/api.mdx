@@ -47,6 +47,8 @@ Fields (conceptual):
 
 ## Create a secret set (KV)
 
+<CodeGroup>
+
 ```http
 POST /v1/vault/secret-sets
 Content-Type: application/json
@@ -77,6 +79,8 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/vault/secret-sets" \
   }'
 ```
 
+</CodeGroup>
+
 Notes:
 - The server encrypts entries at rest.
 - By default, responses do not include plaintext values.
@@ -84,6 +88,8 @@ Notes:
 ---
 
 ## Import a .env-style secret set
+
+<CodeGroup>
 
 ```http
 POST /v1/vault/secret-sets/import
@@ -109,9 +115,13 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/vault/secret-sets/import" \
   }'
 ```
 
+</CodeGroup>
+
 ---
 
 ## Grant an agent access
+
+<CodeGroup>
 
 ```http
 POST /v1/vault/grants
@@ -139,6 +149,8 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/vault/grants" \
   }'
 ```
 
+</CodeGroup>
+
 Recommended default:
 - `allowed_actions=["proxy_use"]`
 - `allowed_keys="*"` only when you trust the agent with the full set
@@ -146,6 +158,8 @@ Recommended default:
 ---
 
 ## Mint a request-scoped lease
+
+<CodeGroup>
 
 ```http
 POST /v1/vault/leases
@@ -173,11 +187,15 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/vault/leases" \
   }'
 ```
 
+</CodeGroup>
+
 ---
 
 ## Use a lease via proxy/injection
 
 A generic proxy endpoint can forward requests while injecting secrets.
+
+<CodeGroup>
 
 ```http
 POST /v1/vault/proxy
@@ -221,6 +239,8 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/vault/proxy" \
   }'
 ```
 
+</CodeGroup>
+
 Notes:
 - Injection configuration can be explicit per request (advanced) or derived from a server-side mapping (recommended).
 - The agent should not receive the raw key.
@@ -230,6 +250,8 @@ Notes:
 ## Auditing
 Vault should expose audit logs (admin-only):
 
+<CodeGroup>
+
 ```http
 GET /v1/vault/audit?secret_set_id=ss_456&limit=50
 ```
@@ -238,6 +260,8 @@ GET /v1/vault/audit?secret_set_id=ss_456&limit=50
 curl -sS "https://api.clawb.ai/api/v1/vault/audit?secret_set_id=ss_456&limit=50" \
   -H "X-Clawb-Api-Key: ck_live_replace_me"
 ```
+
+</CodeGroup>
 
 Audit entries should include:
 - `timestamp`

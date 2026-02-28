@@ -25,6 +25,8 @@ Clawb can act as a **backend enforcement point** for email sending:
 
 ## Step 1 — Ask for a decision
 
+<CodeGroup>
+
 ```http
 POST /v1/check
 Content-Type: application/json
@@ -58,9 +60,13 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/check" \
   }'
 ```
 
+</CodeGroup>
+
 ## Step 2 — Send (only if allowed)
 
 `/v1/email/send` requires a workspace API key header.
+
+<CodeGroup>
 
 ```http
 POST /v1/email/send
@@ -94,6 +100,8 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/email/send" \
     }
   }'
 ```
+
+</CodeGroup>
 
 ### Response
 

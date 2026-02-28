@@ -41,6 +41,8 @@ provider.identity_kill_switch_minting(paused=False, reason="incident closed")
 
 Sets a workspace cutoff timestamp so existing minted credentials are treated as revoked.
 
+<CodeGroup>
+
 ```bash
 curl -sS -X POST "https://api.clawb.ai/api/v1/identity/kill-switch/revoke-all" \
   -H "Content-Type: application/json" \
@@ -52,7 +54,11 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/identity/kill-switch/revoke-all" \
 provider.identity_kill_switch_revoke_all(reason="key compromise")
 ```
 
+</CodeGroup>
+
 ## GET `/v1/identity/kill-switch/status`
+
+<CodeGroup>
 
 ```bash
 curl -sS "https://api.clawb.ai/api/v1/identity/kill-switch/status" \
@@ -68,6 +74,8 @@ print(status)
 #   "all_credentials_revoked_at": None
 # }
 ```
+
+</CodeGroup>
 
 ## Incident sequence
 
