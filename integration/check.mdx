@@ -6,11 +6,17 @@ Your relying service should call `/v1/check` immediately before sensitive operat
 
 ## Auth
 
+<CodeGroup>
+
 ```http
 X-Clawb-Api-Key: ck_live_...
 ```
 
+</CodeGroup>
+
 ## Request
+
+<CodeGroup>
 
 ```json
 {
@@ -25,9 +31,13 @@ X-Clawb-Api-Key: ck_live_...
 }
 ```
 
+</CodeGroup>
+
 For `action: "send_email"`, include `email` object fields so policy constraints can evaluate recipients and attachments.
 
 ## curl quick test
+
+<CodeGroup>
 
 ```bash
 curl -sS -X POST "https://api.clawb.ai/api/v1/check" \
@@ -44,6 +54,8 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/check" \
     }
   }'
 ```
+
+</CodeGroup>
 
 ## Response
 
@@ -70,6 +82,8 @@ When challenged:
 
 ## Python SDK example
 
+<CodeGroup>
+
 ```python
 from clawb_agent_sdk import ClawbClient, WorkspaceControlPlane
 
@@ -93,6 +107,8 @@ else:
     # Deny safely.
     pass
 ```
+
+</CodeGroup>
 
 ## Related docs
 

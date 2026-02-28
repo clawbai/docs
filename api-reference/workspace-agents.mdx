@@ -13,11 +13,17 @@ Idempotently maps a workspace-side key to a Clawb `agent_id` inside the workspac
 
 Workspace API key required.
 
+<CodeGroup>
+
 ```http
 X-Clawb-Api-Key: ck_live_...
 ```
 
+</CodeGroup>
+
 ### Request body
+
+<CodeGroup>
 
 ```json
 {
@@ -31,7 +37,11 @@ X-Clawb-Api-Key: ck_live_...
 }
 ```
 
+</CodeGroup>
+
 ### Curl
+
+<CodeGroup>
 
 ```bash
 curl -sS -X POST "https://api.clawb.ai/api/v1/workspace/agents/upsert" \
@@ -47,6 +57,8 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/workspace/agents/upsert" \
     "status": "active"
   }'
 ```
+
+</CodeGroup>
 
 ## GET `/v1/workspace/agents`
 

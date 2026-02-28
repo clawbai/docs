@@ -11,17 +11,27 @@ It maps the core control-plane workflow: identity, verification/decisioning, bou
 
 Base URL used below:
 
+<CodeGroup>
+
 ```text
 https://api.clawb.ai/api
 ```
 
+</CodeGroup>
+
 ## Install
+
+<CodeGroup>
 
 ```bash
 pip install clawb-agent-sdk
 ```
 
+</CodeGroup>
+
 ## Quick setup
+
+<CodeGroup>
 
 ```python
 from clawb_agent_sdk import ClawbClient, WorkspaceControlPlane
@@ -36,9 +46,13 @@ control_plane_client = ClawbClient(base_url=BASE_URL)
 control_plane = WorkspaceControlPlane(client=control_plane_client, api_key=WORKSPACE_API_KEY)
 ```
 
+</CodeGroup>
+
 ## Agent onboarding and signed runtime
 
 ### 1) Generate keypair
+
+<CodeGroup>
 
 ```python
 from clawb_agent_sdk import ClawbClient
@@ -47,7 +61,11 @@ priv_b64, pub_b64 = ClawbClient.generate_ed25519_keypair_b64()
 print(pub_b64)
 ```
 
+</CodeGroup>
+
 ### 2) Register and attest
+
+<CodeGroup>
 
 ```python
 client = ClawbClient(base_url=BASE_URL)
@@ -66,7 +84,11 @@ agent_client.attest(
 )
 ```
 
+</CodeGroup>
+
 ### 3) Send signed telemetry heartbeat
+
+<CodeGroup>
 
 ```python
 agent_client.post(
@@ -74,6 +96,8 @@ agent_client.post(
     json={"agent_id": reg["agent_id"], "status": "ok", "latency_ms": 72},
 )
 ```
+
+</CodeGroup>
 
 ## Workspace request-time flow
 
@@ -116,6 +140,8 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/verify" \
 
 ### Enforce policy decision
 
+<CodeGroup>
+
 ```python
 decision = control_plane.check(
     agent_id="agt_01...",
@@ -126,9 +152,13 @@ decision = control_plane.check(
 print(decision)
 ```
 
+</CodeGroup>
+
 ## Workspace control-plane APIs (new)
 
 ### Workspace agent inventory
+
+<CodeGroup>
 
 ```python
 control_plane.workspace_agents_upsert(
@@ -145,7 +175,11 @@ inventory = control_plane.workspace_agents_list(environment="prod", label="payme
 print(inventory.get("count"))
 ```
 
+</CodeGroup>
+
 ### Workspace audit
+
+<CodeGroup>
 
 ```python
 events = control_plane.workspace_audit_events(
@@ -164,7 +198,11 @@ csv_export = control_plane.workspace_audit_export(
 print(len(csv_export.get("csv", "")))
 ```
 
+</CodeGroup>
+
 ### Identity credential mint and revoke
+
+<CodeGroup>
 
 ```python
 mint = control_plane.identity_credentials_mint(
@@ -190,7 +228,11 @@ control_plane.identity_credentials_revoke_by_agent(
 )
 ```
 
+</CodeGroup>
+
 ### Kill switch
+
+<CodeGroup>
 
 ```python
 control_plane.identity_kill_switch_minting(paused=True, reason="incident INC-7")
@@ -198,7 +240,11 @@ control_plane.identity_kill_switch_revoke_all(reason="credential compromise")
 print(control_plane.identity_kill_switch_status())
 ```
 
+</CodeGroup>
+
 ### Reputation feedback (HMAC-signed)
+
+<CodeGroup>
 
 ```python
 # SDK automatically computes feedback signature headers.
@@ -209,7 +255,11 @@ control_plane.reputation_feedback(
 )
 ```
 
+</CodeGroup>
+
 ## Public metadata helpers (new)
+
+<CodeGroup>
 
 ```python
 cfg = control_plane_client.well_known_openid_configuration()
@@ -218,6 +268,8 @@ jwks = control_plane_client.well_known_jwks()
 print(cfg["issuer"])
 print("keys:", len(jwks.get("keys", [])))
 ```
+
+</CodeGroup>
 
 ## Token exchange helpers (new)
 

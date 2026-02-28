@@ -3,85 +3,65 @@
 - At the start of every new session, read:
   - `/Users/saeed/Projects/8-clawb/.codex/memory/initialize.md`
   - `/Users/saeed/Projects/8-clawb/.codex/memory.md`
-- Use it as persistent project context before making changes.
-- If the memory file is missing, continue and report it once.
+- Use that memory as persistent context before editing docs.
+- If a memory file is missing, continue and report once.
 - Never write secrets into git-tracked files.
 
-> **First-time setup**: This is a default AGENTS.md file. Customize it for your project's specific needs, including your preferred code languages, terminology, style guidelines, and content requirements.
+# Docs mission
 
-# Documentation agent instructions
+- This repo is for `docs.clawb.ai`.
+- Primary audience: junior software engineers at enterprise companies integrating many agents.
+- Canonical language: workspace / enterprise security / control plane.
+- Avoid outdated terminology unless required by API field names.
 
-IMPORTANT! When you start a session, remind the user that they have the default AGENTS.md file and they might want to customize it for their project.
+## Mintlify rules
 
-## Mintlify basics
+- Configuration lives in `docs.json`; review it before structural changes.
+- Use MDX and Mintlify components.
+- Prefer `<CodeGroup>` for code snippets:
+  - Use it for multi-language alternatives (`Python SDK`, `curl`, `TypeScript`).
+  - Use it for single snippets too, so language labels are visible above code.
+  - Keep code inside `<RequestExample>` / `<ResponseExample>` unchanged unless explicitly requested.
+- Use `<Tabs>` for platform or conceptual variants, not language-only code examples.
 
-- Configuration lives in `docs.json` - check it before making structural changes
-- Use MDX format for documentation pages
-- Run `mint dev` locally to preview changes before committing
-- Run `mint broken-links` to check for broken links
+## Writing style
 
-## Mintlify components
+- Use active voice and second person ("you").
+- Keep sentences concise.
+- Use sentence case headings.
+- Use realistic enterprise examples (`agent_id`, policies, audit/trace context).
+- Prefer concrete action/context examples (for example refund amount, actor, approval path).
 
-Use Mintlify's built-in components for consistent formatting. See https://www.mintlify.com/docs/components for all available components.
+## Content requirements
 
-## Style and formatting
+- Add frontmatter (`title`, `description` when needed).
+- Include prerequisites and expected outcomes for implementation pages.
+- Include at least one happy-path plus one failure-handling note for major workflows.
+- Use exact endpoint/method notation (`POST /v1/check`, `POST /v1/verify`).
 
-- Use active voice and second person ("you")
-- Keep sentences concise - one idea per sentence
-- Use sentence case for headings
-- When referencing UI elements, use bold: Click **Settings**
-- Use code formatting for: file names, commands, paths, and code references
+## Don’ts
 
-## Code examples
+- Don’t edit `docs.json` blindly.
+- Don’t remove pages without checking inbound links.
+- Don’t use placeholders like `foo` / `bar` in primary examples.
+- Don’t use `provider` as the actor term unless it is an actual API field.
 
-- Include language identifiers in fenced code blocks
-- Add titles to code blocks when relevant: ```javascript filename.js
-- Show realistic parameter values, not placeholders like `foo` or `bar`
-- Include error handling for API examples
+# Delivery workflow
 
-## Content structure
+1. Create a branch.
+2. Commit with clear scope.
+3. Push and open PR to `main`.
+4. Use squash merge.
+5. Merge only if checks pass or no checks are required.
+6. Switch back to `main` and pull latest.
 
-- Add frontmatter (title, description) to every page
-- Use `sidebarTitle` in frontmatter if the nav title should differ from the page title
-- Include introductory context before diving into steps or details
-- Add "Next steps" or related links where helpful
+## PR policy
 
-## Documentation depth default
+- Title format: `<type>: <short summary>`.
+- PR body sections: `Summary`, `Testing`, `Risks`.
 
-- Write docs for junior developers by default
-- Prefer step-by-step explanations with clear prerequisites and expected outcomes
-- Include runnable code examples for each API/workflow section
-- Add brief inline code comments for non-obvious lines
-- Include at least one happy-path and one troubleshooting/failure example per major section
-- Use realistic values (avoid placeholder values like `foo` and `bar`)
+## Safety
 
-## What to avoid
-
-- Don't edit `docs.json` without understanding the navigation structure
-- Don't remove existing pages without checking for inbound links
-- Don't use HTML when an MDX component exists for the same purpose
-- Don't add pages to navigation that don't exist yet
-
-# Default workflow
-
-- After completing any code change, automatically:
-1. create a feature branch (if needed)
-2. commit with a clear message
-3. push to origin
-4. open a PR to `main`
-5. if checks are green (or if no checks are required), merge the PR
-6. switch local branch back to `main` and pull latest
-
-# PR policy
-
-- Use squash merge.
-- PR title format: `<type>: <short summary>`.
-- PR body must include: Summary, Testing, Risks.
-
-# Safety rules
-
-- Do not auto-merge if:
-1. merge conflicts exist
-2. required checks fail
-3. PR is marked draft
-- In those cases, stop and report.
+- Do not auto-merge if there are merge conflicts.
+- Do not auto-merge if required checks fail.
+- Do not auto-merge draft PRs.

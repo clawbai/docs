@@ -12,22 +12,34 @@ Actors:
 
 Every refund request calls `/v1/check` with context like:
 
+<CodeGroup>
+
 ```json
 { "action": "refund", "amount": 49.00, "customer_id": "...", "reason": "late delivery" }
 ```
+
+</CodeGroup>
 
 ## DevOps agent deploying to production
 
 Context example:
 
+<CodeGroup>
+
 ```json
 { "action": "deploy", "env": "prod", "repo": "api", "commit": "...", "change_risk": "high" }
 ```
+
+</CodeGroup>
 
 ## Research agent using paid APIs
 
 Context example:
 
+<CodeGroup>
+
 ```json
 { "action": "search", "provider": "serp", "estimated_cost": 0.10 }
 ```
+
+</CodeGroup>

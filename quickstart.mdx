@@ -98,6 +98,8 @@ Reference: [Workspace integration flow](/integration/workspace-flow)
 
 Raw HTTP:
 
+<CodeGroup>
+
 ```http
 POST /v1/check
 Content-Type: application/json
@@ -114,6 +116,8 @@ X-Clawb-Api-Key: ck_live_...
   }
 }
 ```
+
+</CodeGroup>
 
 <CodeGroup>
 
@@ -144,6 +148,8 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/check" \
 
 ### 4) Enforce the decision in your service
 
+<CodeGroup>
+
 ```python
 decision_value = (decision.get("decision") or "").lower()
 
@@ -157,6 +163,8 @@ else:
     # Deny safely.
     pass
 ```
+
+</CodeGroup>
 
 ---
 

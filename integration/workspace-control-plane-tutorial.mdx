@@ -23,6 +23,8 @@ This tutorial is for teams building secure enterprise agent operations.
 
 ## Step 1: setup client objects
 
+<CodeGroup>
+
 ```python
 from clawb_agent_sdk import ClawbClient, WorkspaceControlPlane
 
@@ -33,7 +35,11 @@ client = ClawbClient(base_url=BASE_URL)
 control_plane = WorkspaceControlPlane(client=client, api_key=WORKSPACE_API_KEY)
 ```
 
+</CodeGroup>
+
 ## Step 2: upsert workspace mapping
+
+<CodeGroup>
 
 ```python
 mapping = control_plane.workspace_agents_upsert(
@@ -48,7 +54,11 @@ mapping = control_plane.workspace_agents_upsert(
 print(mapping)
 ```
 
+</CodeGroup>
+
 ## Step 3: mint short-lived credential
+
+<CodeGroup>
 
 ```python
 mint = control_plane.identity_credentials_mint(
@@ -63,7 +73,11 @@ mint = control_plane.identity_credentials_mint(
 print(mint["credential"]["cred_id"])
 ```
 
+</CodeGroup>
+
 ## Step 4: query audit events
+
+<CodeGroup>
 
 ```python
 audit = control_plane.workspace_audit_events(limit=20)
@@ -71,7 +85,11 @@ for event in audit.get("items", []):
     print(event["created_at"], event["event_type"], event.get("decision"))
 ```
 
+</CodeGroup>
+
 ## Step 5: incident response controls
+
+<CodeGroup>
 
 ```python
 control_plane.identity_kill_switch_minting(paused=True, reason="incident INC-42")
@@ -79,7 +97,11 @@ control_plane.identity_kill_switch_revoke_all(reason="incident INC-42")
 print(control_plane.identity_kill_switch_status())
 ```
 
+</CodeGroup>
+
 ## Step 6: submit reputation feedback
+
+<CodeGroup>
 
 ```python
 feedback = control_plane.reputation_feedback(
@@ -89,6 +111,8 @@ feedback = control_plane.reputation_feedback(
 )
 print(feedback)
 ```
+
+</CodeGroup>
 
 ## Curl equivalents
 
