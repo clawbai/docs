@@ -28,6 +28,20 @@ provider.identity_kill_switch_minting(paused=False, reason="incident closed")
 
 </CodeGroup>
 
+### Example response
+
+<CodeGroup>
+
+```json JSON
+{
+  "ok": true,
+  "minting_paused": true,
+  "reason": "incident INC-123"
+}
+```
+
+</CodeGroup>
+
 ## POST `/v1/identity/kill-switch/revoke-all`
 
 Sets a workspace cutoff timestamp so existing minted credentials are treated as revoked.
@@ -43,6 +57,20 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/identity/kill-switch/revoke-all" \
 
 ```python Python SDK
 provider.identity_kill_switch_revoke_all(reason="key compromise")
+```
+
+</CodeGroup>
+
+### Example response
+
+<CodeGroup>
+
+```json JSON
+{
+  "ok": true,
+  "all_credentials_revoked_at": "2026-02-28T00:00:00Z",
+  "reason": "key compromise"
+}
 ```
 
 </CodeGroup>
@@ -64,6 +92,20 @@ print(status)
 #   "minting_paused": False,
 #   "all_credentials_revoked_at": None
 # }
+```
+
+</CodeGroup>
+
+### Example response
+
+<CodeGroup>
+
+```json JSON
+{
+  "ok": true,
+  "minting_paused": false,
+  "all_credentials_revoked_at": null
+}
 ```
 
 </CodeGroup>

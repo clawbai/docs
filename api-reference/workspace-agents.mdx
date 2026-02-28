@@ -59,6 +59,28 @@ print(out)
 
 </CodeGroup>
 
+### Example response
+
+<CodeGroup>
+
+```json JSON
+{
+  "ok": true,
+  "item": {
+    "external_agent_key": "internal:payments-bot",
+    "agent_id": "agt_01jv2fsk4mv9mtr9j3m7h6qk6y",
+    "display_name": "Payments assistant",
+    "labels": ["prod", "payments"],
+    "environment": "prod",
+    "source": "workspace_api",
+    "status": "active",
+    "updated_at": "2026-02-28T00:00:00Z"
+  }
+}
+```
+
+</CodeGroup>
+
 ## GET `/v1/workspace/agents`
 
 Lists mappings in the workspace.
@@ -68,3 +90,53 @@ Lists mappings in the workspace.
 - `environment`
 - `status`
 - `label`
+
+<CodeGroup>
+
+```bash curl
+curl -sS "https://api.clawb.ai/api/v1/workspace/agents?environment=prod&status=active&label=payments" \
+  -H "X-Clawb-Api-Key: ck_live_replace_me"
+```
+
+```python Python SDK
+items = control_plane.workspace_agents_list(
+    environment="prod",
+    status="active",
+    label="payments",
+)
+print(items)
+```
+
+</CodeGroup>
+
+### Example response
+
+<CodeGroup>
+
+```json JSON
+{
+  "ok": true,
+  "count": 2,
+  "items": [
+    {
+      "external_agent_key": "internal:payments-bot",
+      "agent_id": "agt_01jv2fsk4mv9mtr9j3m7h6qk6y",
+      "display_name": "Payments assistant",
+      "labels": ["prod", "payments"],
+      "environment": "prod",
+      "status": "active"
+    },
+    {
+      "external_agent_key": "internal:refund-bot",
+      "agent_id": "agt_01jv2fsk4mv9mtr9j3m7h6qk7a",
+      "display_name": "Refund assistant",
+      "labels": ["prod", "payments"],
+      "environment": "prod",
+      "status": "active"
+    }
+  ],
+  "next_cursor": null
+}
+```
+
+</CodeGroup>
