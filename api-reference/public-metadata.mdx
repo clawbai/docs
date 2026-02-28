@@ -13,7 +13,7 @@ Returns issuer metadata and JWKS URL.
 
 No auth required.
 
-### Curl example
+
 
 <CodeGroup>
 
@@ -47,12 +47,28 @@ Canonical JWKS endpoint that returns active and previous issuer public keys in J
 
 No auth required.
 
-### Curl example
+
 
 <CodeGroup>
 
 ```bash curl
 curl -sS https://api.clawb.ai/api/.well-known/jwks.json
+```
+
+```python Python SDK
+from clawb_agent_sdk import ClawbClient
+
+# This base URL must include /api.
+client = ClawbClient(base_url="https://api.clawb.ai/api")
+
+# 1) Discover issuer metadata.
+cfg = client.well_known_openid_configuration()
+print("issuer:", cfg["issuer"])
+print("jwks_uri:", cfg["jwks_uri"])
+
+# 2) Fetch keys for JWT signature verification.
+jwks = client.well_known_jwks()
+print("num_keys:", len(jwks.get("keys", [])))
 ```
 
 </CodeGroup>
@@ -78,31 +94,6 @@ curl -sS https://api.clawb.ai/api/.well-known/jwks.json
 
 </CodeGroup>
 
-## GET `/.well-known/clawb/jwks.json`
-
-Back-compat alias for older integrations. Returns the same payload as `/.well-known/jwks.json`.
-
-## Python SDK example
-
-<CodeGroup>
-
-```python Python SDK
-from clawb_agent_sdk import ClawbClient
-
-# This base URL must include /api.
-client = ClawbClient(base_url="https://api.clawb.ai/api")
-
-# 1) Discover issuer metadata.
-cfg = client.well_known_openid_configuration()
-print("issuer:", cfg["issuer"])
-print("jwks_uri:", cfg["jwks_uri"])
-
-# 2) Fetch keys for JWT signature verification.
-jwks = client.well_known_jwks()
-print("num_keys:", len(jwks.get("keys", [])))
-```
-
-</CodeGroup>
 
 ## Operational notes
 
