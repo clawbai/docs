@@ -35,6 +35,11 @@ client = ClawbClient(base_url=BASE_URL)
 control_plane = WorkspaceControlPlane(client=client, api_key=WORKSPACE_API_KEY)
 ```
 
+```bash curl
+export CLAWB_BASE_URL="https://api.clawb.ai/api"
+export CLAWB_API_KEY="ck_test_replace_me"
+```
+
 </CodeGroup>
 
 ## Step 2: upsert workspace mapping
@@ -52,6 +57,21 @@ mapping = control_plane.workspace_agents_upsert(
     status="active",
 )
 print(mapping)
+```
+
+```bash curl
+curl -sS -X POST "$CLAWB_BASE_URL/v1/workspace/agents/upsert" \
+  -H "Content-Type: application/json" \
+  -H "X-Clawb-Api-Key: $CLAWB_API_KEY" \
+  -d '{
+    "external_agent_key":"internal:payments-bot",
+    "agent_id":"agt_01replace",
+    "display_name":"Payments automation bot",
+    "labels":["prod","payments"],
+    "environment":"prod",
+    "source":"workspace_api",
+    "status":"active"
+  }'
 ```
 
 </CodeGroup>
@@ -73,6 +93,21 @@ mint = control_plane.identity_credentials_mint(
 print(mint["credential"]["cred_id"])
 ```
 
+```bash curl
+curl -sS -X POST "$CLAWB_BASE_URL/v1/identity/credentials/mint" \
+  -H "Content-Type: application/json" \
+  -H "X-Clawb-Api-Key: $CLAWB_API_KEY" \
+  -d '{
+    "agent_id":"agt_01replace",
+    "provider":"sendgrid",
+    "audience":"clawb.provider",
+    "ttl_seconds":300,
+    "one_time":true,
+    "scopes":["email:send"],
+    "token_type":"jwt"
+  }'
+```
+
 </CodeGroup>
 
 ## Step 4: query audit events
@@ -85,6 +120,11 @@ for event in audit.get("items", []):
     print(event["created_at"], event["event_type"], event.get("decision"))
 ```
 
+```bash curl
+curl -sS "$CLAWB_BASE_URL/v1/workspace/audit/events?limit=20" \
+  -H "X-Clawb-Api-Key: $CLAWB_API_KEY"
+```
+
 </CodeGroup>
 
 ## Step 5: incident response controls
@@ -95,6 +135,21 @@ for event in audit.get("items", []):
 control_plane.identity_kill_switch_minting(paused=True, reason="incident INC-42")
 control_plane.identity_kill_switch_revoke_all(reason="incident INC-42")
 print(control_plane.identity_kill_switch_status())
+```
+
+```bash curl
+curl -sS -X POST "$CLAWB_BASE_URL/v1/identity/kill-switch/minting" \
+  -H "Content-Type: application/json" \
+  -H "X-Clawb-Api-Key: $CLAWB_API_KEY" \
+  -d '{"paused":true,"reason":"incident INC-42"}'
+
+curl -sS -X POST "$CLAWB_BASE_URL/v1/identity/kill-switch/revoke-all" \
+  -H "Content-Type: application/json" \
+  -H "X-Clawb-Api-Key: $CLAWB_API_KEY" \
+  -d '{"reason":"incident INC-42"}'
+
+curl -sS "$CLAWB_BASE_URL/v1/identity/kill-switch/status" \
+  -H "X-Clawb-Api-Key: $CLAWB_API_KEY"
 ```
 
 </CodeGroup>
@@ -112,21 +167,18 @@ feedback = control_plane.reputation_feedback(
 print(feedback)
 ```
 
-</CodeGroup>
-
-## Curl equivalents
-
-<CodeGroup>
-
 ```bash curl
-curl -sS -X POST https://api.clawb.ai/api/v1/workspace/agents/upsert \
+curl -sS -X POST "$CLAWB_BASE_URL/v1/reputation/feedback" \
   -H "Content-Type: application/json" \
-  -H "X-Clawb-Api-Key: ck_test_replace_me" \
-  -d '{"external_agent_key":"internal:payments-bot","agent_id":"agt_01replace","environment":"prod"}'
-
-
-curl -sS "https://api.clawb.ai/api/v1/workspace/audit/events?limit=20" \
-  -H "X-Clawb-Api-Key: ck_test_replace_me"
+  -H "X-Clawb-Api-Key: $CLAWB_API_KEY" \
+  -H "X-Clawb-Feedback-Timestamp: 1740137855000" \
+  -H "X-Clawb-Feedback-Nonce: n_123" \
+  -H "X-Clawb-Feedback-Signature: <base64-hmac>" \
+  -d '{
+    "agent_id":"agt_01replace",
+    "verdict":"bad",
+    "evidence":{"reason":"repeated invalid_signature attempts"}
+  }'
 ```
 
 </CodeGroup>
