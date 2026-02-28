@@ -62,6 +62,18 @@ curl -sS "https://api.clawb.ai/api/v1/telemetry/heartbeat/recent?agent_id=agt_01
   -H "X-Clawb-Api-Key: ck_live_replace_me"
 ```
 
+```python Python SDK
+from clawb_agent_sdk import ClawbClient
+
+client = ClawbClient(base_url="https://api.clawb.ai/api")
+recent = client.get(
+    "/v1/telemetry/heartbeat/recent",
+    params={"agent_id": "agt_01...", "limit": 20},
+    headers={"X-Clawb-Api-Key": "ck_live_replace_me"},
+)
+print(recent)
+```
+
 </CodeGroup>
 
 These are useful for ingestion pipelines and recent heartbeat views.
