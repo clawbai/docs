@@ -57,6 +57,7 @@ You can:
 - call online verification via `/v1/verify`.
 
 <CodeGroup>
+
 ```python Python SDK
 verify = control_plane.verify(
     agent_id=agent_id,
@@ -86,6 +87,7 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/verify" \
     "signature_b64": "<base64-signature>"
   }'
 ```
+
 </CodeGroup>
 
 Reference: [Workspace integration flow](/integration/workspace-flow)
@@ -114,6 +116,7 @@ X-Clawb-Api-Key: ck_live_...
 ```
 
 <CodeGroup>
+
 ```python Python SDK
 decision = control_plane.check(
     agent_id="agt_...",
@@ -122,6 +125,7 @@ decision = control_plane.check(
     context={"amount": 49.0, "currency": "USD", "reason": "late_delivery"},
 )
 ```
+
 ```bash curl
 curl -sS -X POST "https://api.clawb.ai/api/v1/check" \
   -H "Content-Type: application/json" \
@@ -133,6 +137,7 @@ curl -sS -X POST "https://api.clawb.ai/api/v1/check" \
     "context": {"amount": 49.0, "currency": "USD", "reason": "late_delivery"}
   }'
 ```
+
 </CodeGroup>
 
 ---
