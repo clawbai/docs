@@ -17,27 +17,6 @@ Alias endpoint with the same behavior and response contract as `/v1/policies/syn
 
 Dashboard user session auth (not workspace API key).
 
-### Request body
-
-<CodeGroup>
-
-```json JSON
-{
-  "policy_id": "pol_enterprise_sync",
-  "policy_name": "Enterprise Policy Sync",
-  "dry_run": false,
-  "expected_policy_hash": "sha256:...",
-  "spec": {
-    "reusable_policy_blocks": {},
-    "agent_groups": [],
-    "bindings": [],
-    "global_guardrails": {}
-  }
-}
-```
-
-</CodeGroup>
-
 ### Idempotency
 
 You can set `Idempotency-Key` header to make repeated CI retries safe.
@@ -49,8 +28,6 @@ Idempotency-Key: deploy-2026-02-21-001
 ```
 
 </CodeGroup>
-
-### Curl example
 
 <CodeGroup>
 
@@ -87,7 +64,7 @@ print(sync_out)
 
 ### Response patterns
 
-- Dry run:
+Dry run:
 
 <CodeGroup>
 
